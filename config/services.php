@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'xendit' => [
+        'secret_key' => env('XENDIT_SECRET_KEY', 'xnd_development_dummy_key'),
+        'public_key' => env('XENDIT_PUBLIC_KEY', 'xnd_public_dummy_key'),
+        'webhook_token' => env('XENDIT_WEBHOOK_TOKEN', 'titipsini_webhook_verification_token'),
+        'is_production' => env('XENDIT_IS_PRODUCTION', false),
+    ],
+
 ];
