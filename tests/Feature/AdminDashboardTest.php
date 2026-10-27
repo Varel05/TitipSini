@@ -110,6 +110,28 @@ class AdminDashboardTest extends TestCase
         $responseSuper->assertSeeText('Pusat Kendali Eksekutif');
     }
 
+    public function test_admin_can_view_listings_index(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.listings.index'));
+        $response->assertOk();
+        $response->assertSeeText($this->listing->title);
+        $response->assertSeeText('Menunggu Moderasi');
+    }
+
+    public function test_admin_can_view_listing_detail(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.listings.show', $this->listing->id));
+        $response->assertOk();
+        $response->assertSeeText($this->listing->title);
+    }
+
+    public function test_admin_can_view_vendors_index(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.vendors.index'));
+        $response->assertOk();
+        $response->assertSeeText($this->vendorProfile->business_name);
+    }
+
     public function test_admin_can_approve_vendor_kyc(): void
     {
         $response = $this->actingAs($this->admin)

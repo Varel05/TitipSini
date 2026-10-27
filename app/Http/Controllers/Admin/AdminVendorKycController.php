@@ -41,7 +41,7 @@ class AdminVendorKycController extends Controller
             'pending' => VendorProfile::where('verification_status', VendorVerificationStatus::Pending)->count(),
             'verified' => VendorProfile::where('verification_status', VendorVerificationStatus::Verified)->count(),
             'rejected' => VendorProfile::where('verification_status', VendorVerificationStatus::Rejected)->count(),
-            'draft' => VendorProfile::where('verification_status', VendorVerificationStatus::Draft)->count(),
+            'unverified' => VendorProfile::where('verification_status', VendorVerificationStatus::Unverified)->count(),
         ];
 
         return view('pages.admin.vendors.index', [

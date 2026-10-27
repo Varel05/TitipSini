@@ -57,7 +57,7 @@ class AdminListingModerationController extends Controller
      */
     public function show(Listing $listing): View
     {
-        $listing->load(['vendorProfile.user', 'category', 'facilities', 'images', 'storageSlots']);
+        $listing->load(['vendorProfile.user', 'category', 'facilities', 'images', 'slots']);
 
         return view('pages.admin.listings.show', [
             'listing' => $listing,

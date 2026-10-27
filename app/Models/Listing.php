@@ -105,6 +105,14 @@ class Listing extends Model
     }
 
     /**
+     * Alias for slots().
+     */
+    public function storageSlots(): HasMany
+    {
+        return $this->slots();
+    }
+
+    /**
      * Scope a query to only include published listings.
      */
     public function scopePublished(Builder $query): Builder
