@@ -157,7 +157,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Moderasi Listing Tempat Penitipan: [AdminListingModerationController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminListingModerationController.php), [listings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/index.blade.php), dan [listings/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/show.blade.php) (Approve & publish listing ke katalog publik atau tolak/nonaktifkan).
   - Rekonsiliasi Finansial & Monitoring Payout: [AdminFinanceController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminFinanceController.php) dan [finance/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/finance/index.blade.php) (Buku besar komisi platform 20% vs porsi vendor 80%, mutasi invoice Xendit, dan tombol Retry Payout untuk pencairan manual).
   - Viewer Jejak Audit Sistem: [AdminAuditLogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminAuditLogController.php) dan [audit-logs/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/audit-logs/index.blade.php) (Filter aksi, pencarian IP/user, dan JSON payload viewer).
-  - Perbaikan Bug Operational Hours & Views: Menambahkan method & accessor `formatted_operational_hours` pada model `Listing` untuk menangani render aman jadwal operasional baik bertipe array maupun string, memperbarui view vendor, admin, dan katalog detail, serta menambah regression test.
+  - Pembaruan 6 Layanan Resmi TitipSini: Menyelaraskan seluruh kategori dan layanan utama platform sesuai arahan: 1. Penitipan Traveling, 2. Pindahan Kost/Kontrakan, 3. Penitipan Kendaraan, 4. Penitipan Barang Kos, 5. Jasa Security Rumah (Bangunan), dan 6. Jasa Angkut Barang Anak KKN pada `DatabaseSeeder`, navigasi footer `layouts/app.blade.php`, dan katalog etalase `pages/home.blade.php`.
   - Automated Tests: **51 tests, 187 assertions, 100% PASSED** ([VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [AdminDashboardTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/AdminDashboardTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php)).
   - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
@@ -168,16 +168,15 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Setup live credential Xendit xenPlatform di production environment.
 
 ### 3. Architectural Decisions
+- **Core Multi-Service Taxonomy**: Platform TitipSini mendefinisikan 6 kluster layanan terintegrasi (Traveling, Pindahan Kost/Kontrakan, Penitipan Kendaraan, Penitipan Barang Kos, Jasa Security Rumah/Bangunan, dan Angkut Barang KKN) yang mencakup kebutuhan mahasiswa, perantau, wisatawan, dan pemilik properti.
 - **Centralized Executive Governance (ADR-002)**: Administrator dan Superadministrator memegang kendali penuh atas moderasi katalog, persetujuan KYC vendor (termasuk verifikasi dokumen SKCK berisiko tinggi), rekonsiliasi finansial (menggantikan peran finance yang dieliminasi), dan pengawasan jejak audit.
 - **Defense-in-Depth & Non-Repudiation**: Setiap tindakan administratif penting (Approve/Reject KYC, Publish Listing, Retry Payout) otomatis menghasilkan entri immutable di `audit_logs` bersama identitas admin dan alamat IP.
 - **Zero Upfront Booking & Split Settlement Model**: Platform beroperasi dengan model tanpa DP di depan, penagihan close-out saat barang diambil, verifikasi ketat sebelum serah-terima fisik, dan otomasi split payout 80% ke vendor.
 
 ### 4. Active Diffs
-- `app/Models/Listing.php`
-- `resources/views/pages/vendor/listings/index.blade.php`
-- `resources/views/pages/admin/listings/show.blade.php`
-- `resources/views/pages/listing-detail.blade.php`
-- `tests/Feature/VendorPortalTest.php`
+- `database/seeders/DatabaseSeeder.php`
+- `resources/views/layouts/app.blade.php`
+- `resources/views/pages/home.blade.php`
 - `AGENTS.md`
 
 

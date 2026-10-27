@@ -165,12 +165,13 @@
                 <!-- Col 2: Navigasi Cepat -->
                 <div>
                     <h3 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Layanan</h3>
-                    <ul class="space-y-2.5 text-sm">
-                        <li><a href="{{ route('catalog.index', ['category' => 'koper-tas-wisata']) }}" class="hover:text-white transition-colors">Titip Koper &amp; Tas</a></li>
-                        <li><a href="{{ route('catalog.index', ['category' => 'dokumen-berkas-penting']) }}" class="hover:text-white transition-colors">SafeVault Dokumen</a></li>
-                        <li><a href="{{ route('catalog.index', ['category' => 'elektronik-gadget']) }}" class="hover:text-white transition-colors">Titip Laptop &amp; Gadget</a></li>
-                        <li><a href="{{ route('catalog.index', ['category' => 'helm-perlengkapan-rider']) }}" class="hover:text-white transition-colors">Loker Helm &amp; Motor</a></li>
-                        <li><a href="{{ route('catalog.index') }}" class="hover:text-white transition-colors">Semua Lokasi Mitra</a></li>
+                    <ul class="space-y-2 text-xs sm:text-sm">
+                        <li><a href="{{ route('catalog.index', ['category' => 'penitipan-traveling']) }}" class="hover:text-white transition-colors">Penitipan Traveling</a></li>
+                        <li><a href="{{ route('catalog.index', ['category' => 'pindahan-kost-kontrakan']) }}" class="hover:text-white transition-colors">Pindahan Kost/Kontrakan</a></li>
+                        <li><a href="{{ route('catalog.index', ['category' => 'penitipan-kendaraan']) }}" class="hover:text-white transition-colors">Penitipan Kendaraan</a></li>
+                        <li><a href="{{ route('catalog.index', ['category' => 'penitipan-barang-kos']) }}" class="hover:text-white transition-colors">Penitipan Barang Kos</a></li>
+                        <li><a href="{{ route('catalog.index', ['category' => 'jasa-security-rumah']) }}" class="hover:text-white transition-colors">Jasa Security Rumah</a></li>
+                        <li><a href="{{ route('catalog.index', ['category' => 'jasa-angkut-barang-anak-kkn']) }}" class="hover:text-white transition-colors">Jasa Angkut Anak KKN</a></li>
                     </ul>
                 </div>
 

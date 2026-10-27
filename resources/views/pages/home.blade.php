@@ -113,21 +113,25 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($categories as $category)
-                    <a href="{{ route('catalog.index', ['category' => $category->slug]) }}" class="group p-6 rounded-2xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                    <a href="{{ route('catalog.index', ['category' => $category->slug]) }}" class="group p-6 rounded-3xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
                         <div class="space-y-3">
-                            <div class="w-12 h-12 rounded-xl bg-white group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center text-2xl shadow-sm transition-all duration-300">
-                                @if($category->slug === 'koper-tas-wisata')
+                            <div class="w-12 h-12 rounded-2xl bg-white group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center text-2xl shadow-sm transition-all duration-300">
+                                @if($category->slug === 'penitipan-traveling')
                                     <i class="bi bi-briefcase-fill"></i>
-                                @elseif($category->slug === 'dokumen-berkas-penting')
-                                    <i class="bi bi-file-earmark-lock2-fill"></i>
-                                @elseif($category->slug === 'elektronik-gadget')
-                                    <i class="bi bi-laptop-fill"></i>
-                                @elseif($category->slug === 'paket-barang-ekspedisi')
-                                    <i class="bi bi-box-seam-fill"></i>
+                                @elseif($category->slug === 'pindahan-kost-kontrakan')
+                                    <i class="bi bi-truck"></i>
+                                @elseif($category->slug === 'penitipan-kendaraan')
+                                    <i class="bi bi-car-front-fill"></i>
+                                @elseif($category->slug === 'penitipan-barang-kos')
+                                    <i class="bi bi-boxes"></i>
+                                @elseif($category->slug === 'jasa-security-rumah')
+                                    <i class="bi bi-shield-lock-fill"></i>
+                                @elseif($category->slug === 'jasa-angkut-barang-anak-kkn')
+                                    <i class="bi bi-people-fill"></i>
                                 @else
-                                    <i class="bi bi-shield-fill-check"></i>
+                                    <i class="bi bi-box-seam-fill"></i>
                                 @endif
                             </div>
                             <h3 class="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
