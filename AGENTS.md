@@ -150,33 +150,41 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Inisialisasi Project Selesai**:
-  - Kerangka Laravel 13 berhasil diatur di root `d:\laragon\www\TitipSini`.
-  - Database MySQL `titipsini` pada port 3306 (Laragon) berhasil dibuat dan migrasi awal telah dijalankan.
-  - Dependensi Node.js (`npm install`) terpasang dan aset Tailwind CSS v4 berhasil dikompilasi dengan Vite (`npm run build`).
-  - Paket `laravel/boost` terpasang dan dikonfigurasi untuk Antigravity.
-  - Pengujian awal (`php artisan test`) dan linter (`vendor/bin/pint`) telah diverifikasi dan lulus 100%.
+- **Role Finance Ditiadakan**:
+  - Peran `finance` dihapus dari seluruh spesifikasi sistem. Tugas rekonsiliasi finansial dan audit transaksi dikonsolidasikan langsung ke `superadmin` dan `admin` sesuai arahan.
+  - File [IMPLEMENTATION_PLAN_TitipSini.md](file:///d:/laragon/www/TitipSini/IMPLEMENTATION_PLAN_TitipSini.md) dan [AGENTS.md](file:///d:/laragon/www/TitipSini/AGENTS.md) telah diselaraskan.
+- **Workstream 2: Identity, Roles, and Access Control Selesai**:
+  - Dibuat Enum [UserRole](file:///d:/laragon/www/TitipSini/app/Enums/UserRole.php) (`customer`, `vendor`, `admin`, `superadmin`).
+  - Dibuat Enum [VendorVerificationStatus](file:///d:/laragon/www/TitipSini/app/Enums/VendorVerificationStatus.php) (`unverified`, `pending`, `verified`, `rejected`).
+  - Migrasi penambahan kolom role, phone, avatar_url, is_active ke tabel `users`.
+  - Migrasi & Model [CustomerProfile](file:///d:/laragon/www/TitipSini/app/Models/CustomerProfile.php) dan [VendorProfile](file:///d:/laragon/www/TitipSini/app/Models/VendorProfile.php).
+  - Migrasi & Model [AuditLog](file:///d:/laragon/www/TitipSini/app/Models/AuditLog.php) untuk pencatatan jejak audit aksi administratif.
+  - Middleware [EnsureUserHasRole](file:///d:/laragon/www/TitipSini/app/Http/Middleware/EnsureUserHasRole.php) terdaftar di `bootstrap/app.php` dengan alias `role`.
+  - Factories ([UserFactory](file:///d:/laragon/www/TitipSini/database/factories/UserFactory.php), [VendorProfileFactory](file:///d:/laragon/www/TitipSini/database/factories/VendorProfileFactory.php), [CustomerProfileFactory](file:///d:/laragon/www/TitipSini/database/factories/CustomerProfileFactory.php)) dan [DatabaseSeeder](file:///d:/laragon/www/TitipSini/database/seeders/DatabaseSeeder.php) siap digunakan.
+  - Automated Feature Tests ([UserRoleTest](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [EnsureUserHasRoleMiddlewareTest](file:///d:/laragon/www/TitipSini/tests/Feature/EnsureUserHasRoleMiddlewareTest.php)) 100% passed (12 tests, 34 assertions).
+  - Linter Pint (`vendor/bin/pint --dirty --format agent`) lulus 100%.
 
 ### 2. Pending Tasks
-- **Workstream 2: Identity, Roles, and Access Control**:
-  - Implementasi Model & Migrasi User dengan kolom role (`customer`, `vendor`, `admin`, `finance`, `superadmin`).
-  - Implementasi profil Customer dan Vendor (termasuk verifikasi akun vendor).
-  - Setup authentication flow (registrasi, login, logout, password reset).
 - **Workstream 3: Vendor, Lokasi, Katalog & Listing**:
-  - Migrasi & Model untuk Category, Location, VendorProfile, Listing, Facility, Media, Unit/Slot.
-  - Public landing page, search & filter, detail listing dengan Tailwind CSS.
-- **Workstream 4 & 5: Booking Core & Payment Gateway Adapter**:
-  - State machine booking, snapshot harga, validasi ketersediaan idempotency.
-  - Adapter payment gateway untuk model split settlement / transfer langsung ke akun vendor.
+  - Migrasi & Model untuk Category, Location, Listing, Facility, Media, Unit/Slot.
+  - Public landing page, search & filter katalog, detail listing dengan Tailwind CSS.
+- **Workstream 4 & 5: Booking Core, Xendit Gateway Adapter & Lifecycle Transaksi**:
+  - State machine booking: booking dibuat -> konfirmasi vendor -> check-in -> pengambilan & bayar via Xendit -> settlement payout vendor.
+  - Adapter Xendit (xenPlatform) dan webhook handler dengan proteksi idempotency.
 
 ### 3. Architectural Decisions
-- **Modular Monolith**: Menggunakan arsitektur modular monolith di Laravel untuk menjaga kesederhanaan deployment dan batasan domain yang jelas tanpa kerumitan microservices.
+- **Eliminasi Role Finance**: Menghilangkan overhead peran terpisah; kontrol rekonsiliasi dan verifikasi pembayaran dialihkan ke level Admin dan Super Admin.
+- **Strict Role Separation via Enum**: Menggunakan PHP 8.3 Enum (`UserRole`) untuk keamanan tipe data dan integritas database.
+- **Middleware Guard**: `EnsureUserHasRole` memverifikasi status keaktifan akun (`is_active`) dan kecocokan role sebelum mengizinkan eksekusi request controller.
 - **Database MySQL**: Menggunakan MySQL dari Laragon lokal sesuai spesifikasi PRD dan keandalan transaksi ACID (innoDB).
-- **Frontend Blade + Tailwind CSS v4 + Vite**: Menggunakan setup bawaan Laravel untuk performa cepat, SEO-friendly, dan kesesuaian dengan panduan desain modern.
-- **Strict Role Separation**: Status transaksi, status pembayaran, dan status serah terima barang dipisahkan ke siklus hidup independen.
 
 ### 4. Active Diffs
-- `.env` (Konfigurasi MySQL, APP_KEY, nama aplikasi, locale `id`)
-- `composer.json` & `composer.lock` (Penambahan `laravel/boost`)
-- `package.json` & `package-lock.json` (Aset Vite dan Tailwind CSS)
-- `AGENTS.md` (Integrasi panduan Laravel Boost & State Tracking)
+- `app/Enums/UserRole.php` (Enum role: Customer, Vendor, Admin, Superadmin)
+- `app/Enums/VendorVerificationStatus.php` (Enum status verifikasi vendor)
+- `app/Models/User.php` (Cast role, helper methods, dan relasi profil)
+- `app/Models/CustomerProfile.php` & `app/Models/VendorProfile.php` & `app/Models/AuditLog.php`
+- `app/Http/Middleware/EnsureUserHasRole.php` & `bootstrap/app.php`
+- `database/migrations/*` (Tabel role di users, customer_profiles, vendor_profiles, audit_logs)
+- `database/factories/*` & `database/seeders/DatabaseSeeder.php`
+- `tests/Feature/UserRoleTest.php` & `tests/Feature/EnsureUserHasRoleMiddlewareTest.php`
+- `IMPLEMENTATION_PLAN_TitipSini.md` & `AGENTS.md`

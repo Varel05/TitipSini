@@ -225,11 +225,10 @@ Walaupun proyek dimulai dari nol secara teknis, discovery bisnis tetap perlu dil
 
 - `customer`: melihat katalog, booking dan transaksi miliknya.
 - `vendor`: mengelola listing, availability dan booking yang terkait dengan vendor sendiri.
-- `admin`: verifikasi, moderasi, booking assisted dan operasional sesuai permission.
-- `finance`: rekonsiliasi, peninjauan transaksi, refund/payout sesuai kewenangan.
-- `superadmin`: pengelolaan sistem dengan akses terbatas, terkontrol dan diaudit.
+- `admin`: verifikasi, moderasi, booking assisted, operasional, rekonsiliasi dan peninjauan transaksi/refund sesuai permission.
+- `superadmin`: pengelolaan sistem dengan akses terbatas, terkontrol dan diaudit penuh.
 
-Satu user dapat memiliki beberapa role jika model bisnis mengizinkan. Role tidak boleh ditentukan hanya dari field yang dikirim browser.
+Satu user dapat memiliki beberapa role jika model bisnis mengizinkan. Role tidak boleh ditentukan hanya dari field yang dikirim browser. Role `finance` ditiadakan; tugas keuangan/rekonsiliasi ditangani langsung oleh `admin` dan `superadmin`.
 
 ### Tasks
 
