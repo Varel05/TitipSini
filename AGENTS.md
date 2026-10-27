@@ -150,41 +150,45 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Role Finance Ditiadakan**:
-  - Peran `finance` dihapus dari seluruh spesifikasi sistem. Tugas rekonsiliasi finansial dan audit transaksi dikonsolidasikan langsung ke `superadmin` dan `admin` sesuai arahan.
-  - File [IMPLEMENTATION_PLAN_TitipSini.md](file:///d:/laragon/www/TitipSini/IMPLEMENTATION_PLAN_TitipSini.md) dan [AGENTS.md](file:///d:/laragon/www/TitipSini/AGENTS.md) telah diselaraskan.
-- **Workstream 2: Identity, Roles, and Access Control Selesai**:
-  - Dibuat Enum [UserRole](file:///d:/laragon/www/TitipSini/app/Enums/UserRole.php) (`customer`, `vendor`, `admin`, `superadmin`).
-  - Dibuat Enum [VendorVerificationStatus](file:///d:/laragon/www/TitipSini/app/Enums/VendorVerificationStatus.php) (`unverified`, `pending`, `verified`, `rejected`).
-  - Migrasi penambahan kolom role, phone, avatar_url, is_active ke tabel `users`.
-  - Migrasi & Model [CustomerProfile](file:///d:/laragon/www/TitipSini/app/Models/CustomerProfile.php) dan [VendorProfile](file:///d:/laragon/www/TitipSini/app/Models/VendorProfile.php).
-  - Migrasi & Model [AuditLog](file:///d:/laragon/www/TitipSini/app/Models/AuditLog.php) untuk pencatatan jejak audit aksi administratif.
-  - Middleware [EnsureUserHasRole](file:///d:/laragon/www/TitipSini/app/Http/Middleware/EnsureUserHasRole.php) terdaftar di `bootstrap/app.php` dengan alias `role`.
-  - Factories ([UserFactory](file:///d:/laragon/www/TitipSini/database/factories/UserFactory.php), [VendorProfileFactory](file:///d:/laragon/www/TitipSini/database/factories/VendorProfileFactory.php), [CustomerProfileFactory](file:///d:/laragon/www/TitipSini/database/factories/CustomerProfileFactory.php)) dan [DatabaseSeeder](file:///d:/laragon/www/TitipSini/database/seeders/DatabaseSeeder.php) siap digunakan.
-  - Automated Feature Tests ([UserRoleTest](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [EnsureUserHasRoleMiddlewareTest](file:///d:/laragon/www/TitipSini/tests/Feature/EnsureUserHasRoleMiddlewareTest.php)) 100% passed (12 tests, 34 assertions).
-  - Linter Pint (`vendor/bin/pint --dirty --format agent`) lulus 100%.
+- **Workstream 3: Vendor, Lokasi, Katalog & Listing Selesai**:
+  - Dibuat Enum [ListingStatus](file:///d:/laragon/www/TitipSini/app/Enums/ListingStatus.php) (`draft`, `submitted`, `published`, `archived`, `rejected`).
+  - Dibuat Model & Migrasi:
+    - [Category](file:///d:/laragon/www/TitipSini/app/Models/Category.php) (`name`, `slug`, `icon`, `is_active`)
+    - [Facility](file:///d:/laragon/www/TitipSini/app/Models/Facility.php) (`name`, `slug`, `icon`)
+    - [Listing](file:///d:/laragon/www/TitipSini/app/Models/Listing.php) (`title`, `slug`, `pricing`, `capacity`, `operational_hours`, `rules`, dll.)
+    - Pivot `facility_listing`
+    - [ListingImage](file:///d:/laragon/www/TitipSini/app/Models/ListingImage.php)
+    - [StorageSlot](file:///d:/laragon/www/TitipSini/app/Models/StorageSlot.php)
+  - Controller [CatalogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/CatalogController.php) dengan search bar, filter kategori, kota, fasilitas, dan sorting.
+  - Tampilan publik dengan Tailwind CSS v4:
+    - Beranda [home.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/home.blade.php) (Hero search, kategori interaktif, featured listings, 3 alur cara kerja, trust badge).
+    - Katalog [catalog.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/catalog.blade.php) (Filter sidebar, cards responsif, pagination, empty state).
+    - Detail [listing-detail.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/listing-detail.blade.php) (Galeri, fasilitas, jam operasional, aturan, kalkulator estimasi tarif interaktif).
+    - Halaman [faq.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/faq.blade.php), [about.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/about.blade.php), [terms.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/terms.blade.php).
+  - Seeder realistis di [DatabaseSeeder](file:///d:/laragon/www/TitipSini/database/seeders/DatabaseSeeder.php) (Kategori koper/dokumen/elektronik/helm, fasilitas, listing Gambir, Sudirman, Blok M beserta slot).
+  - Automated Tests: 16 tests, 49 assertions 100% passed ([CatalogTest](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php), [UserRoleTest](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [EnsureUserHasRoleMiddlewareTest](file:///d:/laragon/www/TitipSini/tests/Feature/EnsureUserHasRoleMiddlewareTest.php), [ExampleTest](file:///d:/laragon/www/TitipSini/tests/Feature/ExampleTest.php)).
+  - Linter Pint lulus 100%.
 
 ### 2. Pending Tasks
-- **Workstream 3: Vendor, Lokasi, Katalog & Listing**:
-  - Migrasi & Model untuk Category, Location, Listing, Facility, Media, Unit/Slot.
-  - Public landing page, search & filter katalog, detail listing dengan Tailwind CSS.
-- **Workstream 4 & 5: Booking Core, Xendit Gateway Adapter & Lifecycle Transaksi**:
-  - State machine booking: booking dibuat -> konfirmasi vendor -> check-in -> pengambilan & bayar via Xendit -> settlement payout vendor.
-  - Adapter Xendit (xenPlatform) dan webhook handler dengan proteksi idempotency.
+- **Workstream 4: Availability, Pricing & Booking Core**:
+  - Model & Migrasi `Booking` & `BookingItem` (state machine: `created`, `confirmed`, `checked_in`, `retrieval_requested`, `completed`, `cancelled`, `expired`).
+  - Validasi ketersediaan kapasitas dan locking concurrency (race condition protection).
+  - Snapshot harga immutable saat booking dibuat.
+- **Workstream 5: Xendit Payment Gateway (xenPlatform)**:
+  - Alur pembayaran saat pengambilan barang (bukan saat booking awal) sesuai ADR-002.
+  - Adapter Xendit, webhook verified handler, pembagian komisi 20% platform & settlement payout ke vendor.
 
 ### 3. Architectural Decisions
-- **Eliminasi Role Finance**: Menghilangkan overhead peran terpisah; kontrol rekonsiliasi dan verifikasi pembayaran dialihkan ke level Admin dan Super Admin.
-- **Strict Role Separation via Enum**: Menggunakan PHP 8.3 Enum (`UserRole`) untuk keamanan tipe data dan integritas database.
-- **Middleware Guard**: `EnsureUserHasRole` memverifikasi status keaktifan akun (`is_active`) dan kecocokan role sebelum mengizinkan eksekusi request controller.
-- **Database MySQL**: Menggunakan MySQL dari Laragon lokal sesuai spesifikasi PRD dan keandalan transaksi ACID (innoDB).
+- **Zero Upfront Booking Model**: Sesuai ADR-002, booking dapat dibuat gratis tanpa uang muka. Pembayaran baru dieksekusi saat proses pengambilan barang (retrieval/checkout).
+- **Listing Lifecycle Control**: Listing hanya dapat diakses publik jika berstatus `published` dan vendor berstatus `verified`.
+- **Server-Side Authorization & Authoritative Rates**: Perhitungan harga dan validasi ketersediaan kapasitas slot selalu dihitung di server.
 
 ### 4. Active Diffs
-- `app/Enums/UserRole.php` (Enum role: Customer, Vendor, Admin, Superadmin)
-- `app/Enums/VendorVerificationStatus.php` (Enum status verifikasi vendor)
-- `app/Models/User.php` (Cast role, helper methods, dan relasi profil)
-- `app/Models/CustomerProfile.php` & `app/Models/VendorProfile.php` & `app/Models/AuditLog.php`
-- `app/Http/Middleware/EnsureUserHasRole.php` & `bootstrap/app.php`
-- `database/migrations/*` (Tabel role di users, customer_profiles, vendor_profiles, audit_logs)
-- `database/factories/*` & `database/seeders/DatabaseSeeder.php`
-- `tests/Feature/UserRoleTest.php` & `tests/Feature/EnsureUserHasRoleMiddlewareTest.php`
-- `IMPLEMENTATION_PLAN_TitipSini.md` & `AGENTS.md`
+- `app/Enums/ListingStatus.php`
+- `app/Models/Category.php`, `Facility.php`, `Listing.php`, `ListingImage.php`, `StorageSlot.php`
+- `app/Http/Controllers/CatalogController.php`
+- `database/migrations/*_create_categories_table.php`, `facilities`, `listings`, `facility_listing`, `listing_images`, `storage_slots`
+- `resources/views/layouts/app.blade.php`, `resources/views/pages/*`
+- `routes/web.php`
+- `tests/Feature/CatalogTest.php`
+
