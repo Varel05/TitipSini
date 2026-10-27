@@ -150,50 +150,45 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Workstream 6: Vendor Portal (`/vendor`) Selesai**:
-  - Modul Autentikasi & Registrasi: [AuthController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/AuthController.php), [login.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/auth/login.blade.php) (dengan 1-click Quick Demo Role Switcher untuk Mitra, Pelanggan, Superadmin, dan Admin Ops), dan [register.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/auth/register.blade.php).
-  - Dedicated Portal Layout: [layouts/vendor.blade.php](file:///d:/laragon/www/TitipSini/resources/views/layouts/vendor.blade.php) dengan sidebar responsif, status operasional toko (Buka/Tutup switch), dan badge verifikasi KYC mitra.
-  - Dashboard Operasional Mitra: [VendorDashboardController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorDashboardController.php) dan [dashboard.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/dashboard.blade.php) dengan 4 metrik KPI (Total Booking Aktif, Barang Tersimpan Tersegel, Siap Diambil, dan Total Pendapatan Bersih 80% Net Share).
-  - Manajemen Antrian Penitipan & Check-In Segel: [VendorBookingController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorBookingController.php), [bookings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/bookings/index.blade.php), dan lembar kerja operasional [bookings/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/bookings/show.blade.php) dengan input nomor segel barcode fisik (`SEAL-...`).
-  - Strict Handover & Payment Verification: Tombol serah-terima fisik terkunci rapat secara server-side dan hanya dapat dieksekusi jika pembayaran Xendit telah terkonfirmasi LUNAS (`paid`), sesuai aturan tata kelola ADR-002 section 9.3.
-  - Kelola Listing & Tarif Vendor: [VendorListingController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorListingController.php), [listings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/listings/index.blade.php), dan [listings/edit.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/listings/edit.blade.php).
-  - Riwayat Settlement & Pengaturan Rekening Bank: [VendorSettlementController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorSettlementController.php) dan [settlements/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/settlements/index.blade.php) untuk mengelola nomor rekening BCA/Mandiri/BRI dan meninjau pencairan dana 80% net.
-  - Automated Tests: **36 tests, 126 assertions, 100% PASSED** ([VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php)).
+- **Workstream 7: Admin & Superadmin Dashboard (`/admin`) Selesai**:
+  - Centralized Executive Layout: [layouts/admin.blade.php](file:///d:/laragon/www/TitipSini/resources/views/layouts/admin.blade.php) dengan navigasi sidebar lengkap (Dashboard, Verifikasi KYC, Moderasi Listing, Rekonsiliasi Finansial, dan Jejak Audit), quick link ke portal mitra dan web publik, profil admin, dan role badge.
+  - Executive Dashboard: [AdminDashboardController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminDashboardController.php) & [dashboard.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/dashboard.blade.php) (GMV, platform commission 20%, vendor payout 80%, antrian KYC, antrian moderasi listing, dan ringkasan audit log).
+  - Manajemen & Verifikasi KYC Mitra Vendor: [AdminVendorKycController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminVendorKycController.php), [vendors/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/vendors/index.blade.php), dan [vendors/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/vendors/show.blade.php) (Review berkas identitas & SKCK sesuai tata kelola privasi ADR-002, tombol Approve dan Reject dengan alasan tertulis).
+  - Moderasi Listing Tempat Penitipan: [AdminListingModerationController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminListingModerationController.php), [listings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/index.blade.php), dan [listings/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/show.blade.php) (Approve & publish listing ke katalog publik atau tolak/nonaktifkan).
+  - Rekonsiliasi Finansial & Monitoring Payout: [AdminFinanceController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminFinanceController.php) dan [finance/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/finance/index.blade.php) (Buku besar komisi platform 20% vs porsi vendor 80%, mutasi invoice Xendit, dan tombol Retry Payout untuk pencairan manual).
+  - Viewer Jejak Audit Sistem: [AdminAuditLogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminAuditLogController.php) dan [audit-logs/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/audit-logs/index.blade.php) (Filter aksi, pencarian IP/user, dan JSON payload viewer).
+  - Automated Tests: **45 tests, 161 assertions, 100% PASSED** ([AdminDashboardTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/AdminDashboardTest.php), [VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php)).
   - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Workstream 7: Admin & Superadmin Dashboard (`/admin`)**:
-  - Manajemen & verifikasi KYC Mitra Vendor (review dokumen identitas dan SKCK sesuai tata kelola privasi ADR-002, tombol approve/reject).
-  - Moderasi Listing publik (review kelayakan lokasi penitipan sebelum tayang publik).
-  - Rekonsiliasi Finansial & Monitoring Payout (menggantikan peran finance yang dieliminasi; review komisi 20% platform TitipSini vs 80% mitra).
-  - Viewer Jejak Audit Sistem ([AuditLog](file:///d:/laragon/www/TitipSini/app/Models/AuditLog.php)).
+- **Penyempurnaan & Ekspansi Masa Depan (Opsional / Pasca-MVP)**:
+  - Kanal notifikasi tambahan (misal integrasi WhatsApp API resmi bila PO memutuskan untuk mengaktifkannya).
+  - Multi-bahasa (ID / EN) untuk turis mancanegara.
+  - Setup live credential Xendit xenPlatform di production environment.
 
 ### 3. Architectural Decisions
-- **Vendor Isolation & Physical Security Sealing**: Setiap vendor hanya dapat mengakses booking miliknya sendiri. Saat barang dititipkan, nomor segel fisik (`SEAL-...`) wajib tercatat di sistem sebagai bukti tamper-evident.
-- **Strict Payment-Gated Handover (ADR-002 section 9.3)**: Mencegah barang dilepas tanpa pembayaran. Sistem memblokir serah-terima fisik sampai webhook atau pemeriksaan server membuktikan status invoice Xendit lunas.
-- **Automatic Settlement Trigger**: Payout settlement 80% mitra langsung dieksekusi otomatis setelah serah-terima selesai dikonfirmasi.
-- **No Finance Role**: Peran finansial dipegang penuh oleh Superadmin dan Admin untuk rekonsiliasi dan monitoring transaksi.
+- **Centralized Executive Governance (ADR-002)**: Administrator dan Superadministrator memegang kendali penuh atas moderasi katalog, persetujuan KYC vendor (termasuk verifikasi dokumen SKCK berisiko tinggi), rekonsiliasi finansial (menggantikan peran finance yang dieliminasi), dan pengawasan jejak audit.
+- **Defense-in-Depth & Non-Repudiation**: Setiap tindakan administratif penting (Approve/Reject KYC, Publish Listing, Retry Payout) otomatis menghasilkan entri immutable di `audit_logs` bersama identitas admin dan alamat IP.
+- **Zero Upfront Booking & Split Settlement Model**: Platform beroperasi dengan model tanpa DP di depan, penagihan close-out saat barang diambil, verifikasi ketat sebelum serah-terima fisik, dan otomasi split payout 80% ke vendor.
 
 ### 4. Active Diffs
-- `app/Enums/VendorVerificationStatus.php`
-- `app/Http/Middleware/EnsureUserHasRole.php`
-- `app/Http/Controllers/AuthController.php`
-- `app/Http/Controllers/Vendor/VendorDashboardController.php`
-- `app/Http/Controllers/Vendor/VendorBookingController.php`
-- `app/Http/Controllers/Vendor/VendorListingController.php`
-- `app/Http/Controllers/Vendor/VendorSettlementController.php`
-- `resources/views/layouts/app.blade.php`
-- `resources/views/layouts/vendor.blade.php`
-- `resources/views/pages/auth/login.blade.php`
-- `resources/views/pages/auth/register.blade.php`
-- `resources/views/pages/vendor/dashboard.blade.php`
-- `resources/views/pages/vendor/bookings/index.blade.php`
-- `resources/views/pages/vendor/bookings/show.blade.php`
-- `resources/views/pages/vendor/listings/index.blade.php`
-- `resources/views/pages/vendor/listings/edit.blade.php`
-- `resources/views/pages/vendor/settlements/index.blade.php`
+- `app/Enums/SettlementStatus.php`
+- `app/Http/Controllers/Admin/AdminDashboardController.php`
+- `app/Http/Controllers/Admin/AdminVendorKycController.php`
+- `app/Http/Controllers/Admin/AdminListingModerationController.php`
+- `app/Http/Controllers/Admin/AdminFinanceController.php`
+- `app/Http/Controllers/Admin/AdminAuditLogController.php`
+- `resources/views/layouts/admin.blade.php`
+- `resources/views/pages/admin/dashboard.blade.php`
+- `resources/views/pages/admin/vendors/index.blade.php`
+- `resources/views/pages/admin/vendors/show.blade.php`
+- `resources/views/pages/admin/listings/index.blade.php`
+- `resources/views/pages/admin/listings/show.blade.php`
+- `resources/views/pages/admin/finance/index.blade.php`
+- `resources/views/pages/admin/audit-logs/index.blade.php`
 - `routes/web.php`
-- `tests/Feature/VendorPortalTest.php`
+- `tests/Feature/AdminDashboardTest.php`
 - `AGENTS.md`
+
 
 

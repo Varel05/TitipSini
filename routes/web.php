@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuditLogController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminFinanceController;
+use App\Http\Controllers\Admin\AdminListingModerationController;
+use App\Http\Controllers\Admin\AdminVendorKycController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CatalogController;
@@ -79,6 +84,34 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'role:vendor'])->g
     // Settlements & Payouts (80% net share)
     Route::get('/settlements', [VendorSettlementController::class, 'index'])->name('settlements.index');
     Route::post('/settlements/bank', [VendorSettlementController::class, 'updateBank'])->name('settlements.update_bank');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin & Superadmin Dashboard Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,superadmin'])->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Vendor KYC Management
+    Route::get('/vendors', [AdminVendorKycController::class, 'index'])->name('vendors.index');
+    Route::get('/vendors/{vendor}', [AdminVendorKycController::class, 'show'])->name('vendors.show');
+    Route::post('/vendors/{vendor}/approve', [AdminVendorKycController::class, 'approve'])->name('vendors.approve');
+    Route::post('/vendors/{vendor}/reject', [AdminVendorKycController::class, 'reject'])->name('vendors.reject');
+
+    // Listing Moderation
+    Route::get('/listings', [AdminListingModerationController::class, 'index'])->name('listings.index');
+    Route::get('/listings/{listing}', [AdminListingModerationController::class, 'show'])->name('listings.show');
+    Route::post('/listings/{listing}/publish', [AdminListingModerationController::class, 'publish'])->name('listings.publish');
+    Route::post('/listings/{listing}/reject', [AdminListingModerationController::class, 'reject'])->name('listings.reject');
+
+    // Financial Reconciliation (Replaces eliminated finance role)
+    Route::get('/finance', [AdminFinanceController::class, 'index'])->name('finance.index');
+    Route::post('/finance/settlements/{settlement}/retry', [AdminFinanceController::class, 'retryPayout'])->name('finance.retry_payout');
+
+    // System Audit Trail
+    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit_logs.index');
 });
 
 /*
