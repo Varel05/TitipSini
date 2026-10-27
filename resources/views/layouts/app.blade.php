@@ -66,13 +66,35 @@
                     <a href="{{ route('faq') }}" class="text-sm font-semibold {{ request()->routeIs('faq') ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900' }} transition-colors">
                         Cara Kerja &amp; Bantuan
                     </a>
+                    <a href="{{ route('booking.index') }}" class="text-sm font-semibold {{ request()->routeIs('booking.*') ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900' }} transition-colors flex items-center gap-1.5">
+                        <i class="bi bi-ticket-perforated"></i> Pesanan Saya
+                    </a>
                     <a href="{{ route('about') }}" class="text-sm font-semibold {{ request()->routeIs('about') ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900' }} transition-colors">
                         Tentang Kami
                     </a>
                 </nav>
 
-                <!-- Action CTA -->
+                <!-- Action CTA & Auth Buttons -->
                 <div class="flex items-center gap-3">
+                    @auth
+                        @if(auth()->user()->role->value === 'vendor')
+                            <a href="{{ route('vendor.dashboard') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition">
+                                <i class="bi bi-shop"></i> Portal Mitra
+                            </a>
+                        @endif
+
+                        <form action="{{ route('logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="hidden sm:inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-500 hover:text-rose-600 transition">
+                                <i class="bi bi-box-arrow-right"></i> Keluar
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="text-xs sm:text-sm font-semibold text-slate-700 hover:text-indigo-600 px-3 py-2 transition">
+                            Masuk
+                        </a>
+                    @endauth
+
                     <a href="{{ route('catalog.index') }}" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all hover:-translate-y-0.5">
                         <i class="bi bi-geo-alt-fill text-indigo-200"></i>
                         <span>Titip Sekarang</span>

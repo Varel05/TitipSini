@@ -150,45 +150,50 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Workstream 3: Vendor, Lokasi, Katalog & Listing Selesai**:
-  - Dibuat Enum [ListingStatus](file:///d:/laragon/www/TitipSini/app/Enums/ListingStatus.php) (`draft`, `submitted`, `published`, `archived`, `rejected`).
-  - Dibuat Model & Migrasi:
-    - [Category](file:///d:/laragon/www/TitipSini/app/Models/Category.php) (`name`, `slug`, `icon`, `is_active`)
-    - [Facility](file:///d:/laragon/www/TitipSini/app/Models/Facility.php) (`name`, `slug`, `icon`)
-    - [Listing](file:///d:/laragon/www/TitipSini/app/Models/Listing.php) (`title`, `slug`, `pricing`, `capacity`, `operational_hours`, `rules`, dll.)
-    - Pivot `facility_listing`
-    - [ListingImage](file:///d:/laragon/www/TitipSini/app/Models/ListingImage.php)
-    - [StorageSlot](file:///d:/laragon/www/TitipSini/app/Models/StorageSlot.php)
-  - Controller [CatalogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/CatalogController.php) dengan search bar, filter kategori, kota, fasilitas, dan sorting.
-  - Tampilan publik dengan Tailwind CSS v4:
-    - Beranda [home.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/home.blade.php) (Hero search, kategori interaktif, featured listings, 3 alur cara kerja, trust badge).
-    - Katalog [catalog.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/catalog.blade.php) (Filter sidebar, cards responsif, pagination, empty state).
-    - Detail [listing-detail.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/listing-detail.blade.php) (Galeri, fasilitas, jam operasional, aturan, kalkulator estimasi tarif interaktif).
-    - Halaman [faq.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/faq.blade.php), [about.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/about.blade.php), [terms.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/terms.blade.php).
-  - Seeder realistis di [DatabaseSeeder](file:///d:/laragon/www/TitipSini/database/seeders/DatabaseSeeder.php) (Kategori koper/dokumen/elektronik/helm, fasilitas, listing Gambir, Sudirman, Blok M beserta slot).
-  - Automated Tests: 16 tests, 49 assertions 100% passed ([CatalogTest](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php), [UserRoleTest](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [EnsureUserHasRoleMiddlewareTest](file:///d:/laragon/www/TitipSini/tests/Feature/EnsureUserHasRoleMiddlewareTest.php), [ExampleTest](file:///d:/laragon/www/TitipSini/tests/Feature/ExampleTest.php)).
-  - Linter Pint lulus 100%.
+- **Workstream 6: Vendor Portal (`/vendor`) Selesai**:
+  - Modul Autentikasi & Registrasi: [AuthController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/AuthController.php), [login.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/auth/login.blade.php) (dengan 1-click Quick Demo Role Switcher untuk Mitra, Pelanggan, Superadmin, dan Admin Ops), dan [register.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/auth/register.blade.php).
+  - Dedicated Portal Layout: [layouts/vendor.blade.php](file:///d:/laragon/www/TitipSini/resources/views/layouts/vendor.blade.php) dengan sidebar responsif, status operasional toko (Buka/Tutup switch), dan badge verifikasi KYC mitra.
+  - Dashboard Operasional Mitra: [VendorDashboardController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorDashboardController.php) dan [dashboard.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/dashboard.blade.php) dengan 4 metrik KPI (Total Booking Aktif, Barang Tersimpan Tersegel, Siap Diambil, dan Total Pendapatan Bersih 80% Net Share).
+  - Manajemen Antrian Penitipan & Check-In Segel: [VendorBookingController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorBookingController.php), [bookings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/bookings/index.blade.php), dan lembar kerja operasional [bookings/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/bookings/show.blade.php) dengan input nomor segel barcode fisik (`SEAL-...`).
+  - Strict Handover & Payment Verification: Tombol serah-terima fisik terkunci rapat secara server-side dan hanya dapat dieksekusi jika pembayaran Xendit telah terkonfirmasi LUNAS (`paid`), sesuai aturan tata kelola ADR-002 section 9.3.
+  - Kelola Listing & Tarif Vendor: [VendorListingController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorListingController.php), [listings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/listings/index.blade.php), dan [listings/edit.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/listings/edit.blade.php).
+  - Riwayat Settlement & Pengaturan Rekening Bank: [VendorSettlementController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Vendor/VendorSettlementController.php) dan [settlements/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/vendor/settlements/index.blade.php) untuk mengelola nomor rekening BCA/Mandiri/BRI dan meninjau pencairan dana 80% net.
+  - Automated Tests: **36 tests, 126 assertions, 100% PASSED** ([VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php)).
+  - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Workstream 4: Availability, Pricing & Booking Core**:
-  - Model & Migrasi `Booking` & `BookingItem` (state machine: `created`, `confirmed`, `checked_in`, `retrieval_requested`, `completed`, `cancelled`, `expired`).
-  - Validasi ketersediaan kapasitas dan locking concurrency (race condition protection).
-  - Snapshot harga immutable saat booking dibuat.
-- **Workstream 5: Xendit Payment Gateway (xenPlatform)**:
-  - Alur pembayaran saat pengambilan barang (bukan saat booking awal) sesuai ADR-002.
-  - Adapter Xendit, webhook verified handler, pembagian komisi 20% platform & settlement payout ke vendor.
+- **Workstream 7: Admin & Superadmin Dashboard (`/admin`)**:
+  - Manajemen & verifikasi KYC Mitra Vendor (review dokumen identitas dan SKCK sesuai tata kelola privasi ADR-002, tombol approve/reject).
+  - Moderasi Listing publik (review kelayakan lokasi penitipan sebelum tayang publik).
+  - Rekonsiliasi Finansial & Monitoring Payout (menggantikan peran finance yang dieliminasi; review komisi 20% platform TitipSini vs 80% mitra).
+  - Viewer Jejak Audit Sistem ([AuditLog](file:///d:/laragon/www/TitipSini/app/Models/AuditLog.php)).
 
 ### 3. Architectural Decisions
-- **Zero Upfront Booking Model**: Sesuai ADR-002, booking dapat dibuat gratis tanpa uang muka. Pembayaran baru dieksekusi saat proses pengambilan barang (retrieval/checkout).
-- **Listing Lifecycle Control**: Listing hanya dapat diakses publik jika berstatus `published` dan vendor berstatus `verified`.
-- **Server-Side Authorization & Authoritative Rates**: Perhitungan harga dan validasi ketersediaan kapasitas slot selalu dihitung di server.
+- **Vendor Isolation & Physical Security Sealing**: Setiap vendor hanya dapat mengakses booking miliknya sendiri. Saat barang dititipkan, nomor segel fisik (`SEAL-...`) wajib tercatat di sistem sebagai bukti tamper-evident.
+- **Strict Payment-Gated Handover (ADR-002 section 9.3)**: Mencegah barang dilepas tanpa pembayaran. Sistem memblokir serah-terima fisik sampai webhook atau pemeriksaan server membuktikan status invoice Xendit lunas.
+- **Automatic Settlement Trigger**: Payout settlement 80% mitra langsung dieksekusi otomatis setelah serah-terima selesai dikonfirmasi.
+- **No Finance Role**: Peran finansial dipegang penuh oleh Superadmin dan Admin untuk rekonsiliasi dan monitoring transaksi.
 
 ### 4. Active Diffs
-- `app/Enums/ListingStatus.php`
-- `app/Models/Category.php`, `Facility.php`, `Listing.php`, `ListingImage.php`, `StorageSlot.php`
-- `app/Http/Controllers/CatalogController.php`
-- `database/migrations/*_create_categories_table.php`, `facilities`, `listings`, `facility_listing`, `listing_images`, `storage_slots`
-- `resources/views/layouts/app.blade.php`, `resources/views/pages/*`
+- `app/Enums/VendorVerificationStatus.php`
+- `app/Http/Middleware/EnsureUserHasRole.php`
+- `app/Http/Controllers/AuthController.php`
+- `app/Http/Controllers/Vendor/VendorDashboardController.php`
+- `app/Http/Controllers/Vendor/VendorBookingController.php`
+- `app/Http/Controllers/Vendor/VendorListingController.php`
+- `app/Http/Controllers/Vendor/VendorSettlementController.php`
+- `resources/views/layouts/app.blade.php`
+- `resources/views/layouts/vendor.blade.php`
+- `resources/views/pages/auth/login.blade.php`
+- `resources/views/pages/auth/register.blade.php`
+- `resources/views/pages/vendor/dashboard.blade.php`
+- `resources/views/pages/vendor/bookings/index.blade.php`
+- `resources/views/pages/vendor/bookings/show.blade.php`
+- `resources/views/pages/vendor/listings/index.blade.php`
+- `resources/views/pages/vendor/listings/edit.blade.php`
+- `resources/views/pages/vendor/settlements/index.blade.php`
 - `routes/web.php`
-- `tests/Feature/CatalogTest.php`
+- `tests/Feature/VendorPortalTest.php`
+- `AGENTS.md`
+
 

@@ -1,6 +1,13 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\Vendor\VendorBookingController;
+use App\Http\Controllers\Vendor\VendorDashboardController;
+use App\Http\Controllers\Vendor\VendorListingController;
+use App\Http\Controllers\Vendor\VendorSettlementController;
+use App\Http\Controllers\Webhook\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,6 +18,68 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [CatalogController::class, 'index'])->name('home');
 Route::get('/katalog', [CatalogController::class, 'explore'])->name('catalog.index');
 Route::get('/katalog/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
+
+/*
+|--------------------------------------------------------------------------
+| Booking & Transaction Lifecycle Routes (Zero Upfront Flow)
+|--------------------------------------------------------------------------
+*/
+Route::get('/booking/{listing:slug}', [BookingController::class, 'create'])->name('booking.create');
+Route::post('/booking/{listing:slug}', [BookingController::class, 'store'])->name('booking.store');
+
+Route::get('/pesanan', [BookingController::class, 'index'])->name('booking.index');
+Route::get('/pesanan/{booking:booking_code}', [BookingController::class, 'show'])->name('booking.show');
+Route::get('/pesanan/{booking:booking_code}/bayar', [BookingController::class, 'pay'])->name('booking.pay');
+Route::get('/pesanan/{booking:booking_code}/checkout-simulation', [BookingController::class, 'checkoutSimulation'])->name('booking.checkout_simulation');
+Route::post('/pesanan/{booking:booking_code}/ambil', [BookingController::class, 'requestRetrieval'])->name('booking.retrieval');
+Route::post('/pesanan/{booking:booking_code}/simulasi-check-in', [BookingController::class, 'simulateCheckIn'])->name('booking.simulate_checkin');
+Route::post('/pesanan/{booking:booking_code}/simulasi-bayar', [BookingController::class, 'simulatePaymentSuccess'])->name('booking.simulate_pay');
+Route::post('/pesanan/{booking:booking_code}/batal', [BookingController::class, 'cancel'])->name('booking.cancel');
+
+/*
+|--------------------------------------------------------------------------
+| Payment Gateway Webhook Handlers
+|--------------------------------------------------------------------------
+*/
+Route::post('/api/webhooks/xendit', [XenditWebhookController::class, 'handle'])->name('webhook.xendit');
+Route::post('/webhooks/xendit', [XenditWebhookController::class, 'handle']);
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes & Quick Switcher
+|--------------------------------------------------------------------------
+*/
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/demo-login/{role}', [AuthController::class, 'quickLogin'])->name('auth.quick_login');
+
+/*
+|--------------------------------------------------------------------------
+| Vendor Operational Portal Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'role:vendor'])->group(function () {
+    Route::get('/', [VendorDashboardController::class, 'index'])->name('dashboard');
+
+    // Operational Bookings Queue & Handover
+    Route::get('/bookings', [VendorBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{booking:booking_code}', [VendorBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking:booking_code}/checkin', [VendorBookingController::class, 'checkIn'])->name('bookings.checkin');
+    Route::post('/bookings/{booking:booking_code}/handover', [VendorBookingController::class, 'handover'])->name('bookings.handover');
+
+    // Listings Management
+    Route::get('/listings', [VendorListingController::class, 'index'])->name('listings.index');
+    Route::get('/listings/{listing}/edit', [VendorListingController::class, 'edit'])->name('listings.edit');
+    Route::put('/listings/{listing}', [VendorListingController::class, 'update'])->name('listings.update');
+    Route::post('/listings/toggle-open', [VendorListingController::class, 'toggleStoreStatus'])->name('listings.toggle_open');
+
+    // Settlements & Payouts (80% net share)
+    Route::get('/settlements', [VendorSettlementController::class, 'index'])->name('settlements.index');
+    Route::post('/settlements/bank', [VendorSettlementController::class, 'updateBank'])->name('settlements.update_bank');
+});
 
 /*
 |--------------------------------------------------------------------------

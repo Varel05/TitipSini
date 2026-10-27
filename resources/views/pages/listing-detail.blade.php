@@ -227,7 +227,7 @@
                         </div>
 
                         <!-- CTA Booking Action -->
-                        <a href="{{ route('catalog.index') }}#booking" class="w-full py-3.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 hover:scale-[1.01] transition-all">
+                        <a href="{{ route('booking.create', $listing->slug) }}" class="w-full py-3.5 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 hover:scale-[1.01] transition-all">
                             <i class="bi bi-calendar-check-fill"></i>
                             <span>Pesan Tempat Sekarang</span>
                         </a>

@@ -32,8 +32,8 @@ class EnsureUserHasRole
 
         $userRoleValue = $user->role instanceof UserRole ? $user->role->value : (string) $user->role;
 
-        // Superadmin has access to administrative routes
-        if ($userRoleValue === UserRole::Superadmin->value && in_array(UserRole::Admin->value, $roles, true)) {
+        // Superadmin has access to all protected dashboards
+        if ($userRoleValue === UserRole::Superadmin->value) {
             return $next($request);
         }
 
