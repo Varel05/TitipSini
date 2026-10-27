@@ -157,8 +157,8 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Moderasi Listing Tempat Penitipan: [AdminListingModerationController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminListingModerationController.php), [listings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/index.blade.php), dan [listings/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/show.blade.php) (Approve & publish listing ke katalog publik atau tolak/nonaktifkan).
   - Rekonsiliasi Finansial & Monitoring Payout: [AdminFinanceController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminFinanceController.php) dan [finance/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/finance/index.blade.php) (Buku besar komisi platform 20% vs porsi vendor 80%, mutasi invoice Xendit, dan tombol Retry Payout untuk pencairan manual).
   - Viewer Jejak Audit Sistem: [AdminAuditLogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminAuditLogController.php) dan [audit-logs/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/audit-logs/index.blade.php) (Filter aksi, pencarian IP/user, dan JSON payload viewer).
-  - Perbaikan Bug Enum & Relationship: Menambahkan method `badgeClasses()` pada `ListingStatus` dan `PaymentStatus`, memperbaiki relasi `slots` pada `Listing` & controller, serta koreksi status KYC `VendorVerificationStatus::Unverified` pada registrasi vendor `AuthController` dan filter KYC admin.
-  - Automated Tests: **50 tests, 184 assertions, 100% PASSED** ([UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [AdminDashboardTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/AdminDashboardTest.php), [VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php)).
+  - Perbaikan Bug Operational Hours & Views: Menambahkan method & accessor `formatted_operational_hours` pada model `Listing` untuk menangani render aman jadwal operasional baik bertipe array maupun string, memperbarui view vendor, admin, dan katalog detail, serta menambah regression test.
+  - Automated Tests: **51 tests, 187 assertions, 100% PASSED** ([VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [AdminDashboardTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/AdminDashboardTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php)).
   - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
@@ -173,8 +173,11 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - **Zero Upfront Booking & Split Settlement Model**: Platform beroperasi dengan model tanpa DP di depan, penagihan close-out saat barang diambil, verifikasi ketat sebelum serah-terima fisik, dan otomasi split payout 80% ke vendor.
 
 ### 4. Active Diffs
-- `app/Http/Controllers/AuthController.php`
-- `tests/Feature/UserRoleTest.php`
+- `app/Models/Listing.php`
+- `resources/views/pages/vendor/listings/index.blade.php`
+- `resources/views/pages/admin/listings/show.blade.php`
+- `resources/views/pages/listing-detail.blade.php`
+- `tests/Feature/VendorPortalTest.php`
 - `AGENTS.md`
 
 

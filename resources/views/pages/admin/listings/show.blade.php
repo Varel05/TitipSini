@@ -52,7 +52,7 @@
                 </div>
                 <div>
                     <span class="text-slate-400 block text-[11px]">Jam Buka</span>
-                    <span class="font-bold text-slate-900 text-sm">{{ $listing->operational_hours ?? '24 Jam' }}</span>
+                    <span class="font-bold text-slate-900 text-sm">{{ $listing->formatted_operational_hours }}</span>
                 </div>
             </div>
 

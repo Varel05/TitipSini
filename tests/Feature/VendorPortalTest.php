@@ -74,6 +74,9 @@ class VendorPortalTest extends TestCase
             'capacity_total' => 10,
             'capacity_available' => 6,
             'status' => ListingStatus::Published,
+            'operational_hours' => [
+                'monday' => ['open' => '06:00', 'close' => '23:00'],
+            ],
         ]);
 
         $bookingService = app(BookingService::class);
@@ -105,6 +108,15 @@ class VendorPortalTest extends TestCase
         $response->assertSeeText('Loker Sentral Gambir');
         $response->assertSeeText('Booking Aktif');
         $response->assertSeeText('Barang Tersimpan');
+    }
+
+    public function test_vendor_can_view_listings_index(): void
+    {
+        $response = $this->actingAs($this->vendorUser)->get(route('vendor.listings.index'));
+
+        $response->assertOk();
+        $response->assertSeeText($this->listing->title);
+        $response->assertSeeText('06:00 - 23:00 WIB');
     }
 
     public function test_vendor_can_view_operational_bookings_queue(): void

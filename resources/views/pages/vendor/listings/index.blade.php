@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="text-xs text-slate-600 space-y-1">
-                    <div><span class="text-slate-400">Jam Operasional:</span> <strong class="text-slate-800">{{ $listing->operational_hours ?? '24 Jam Nonstop' }}</strong></div>
+                    <div><span class="text-slate-400">Jam Operasional:</span> <strong class="text-slate-800">{{ $listing->formatted_operational_hours }}</strong></div>
                     <div><span class="text-slate-400">Fasilitas:</span> 
                         @foreach($listing->facilities as $fac)
                             <span class="inline-block bg-white border border-slate-200 rounded px-1.5 py-0.5 text-[10px] mr-1">{{ $fac->name }}</span>

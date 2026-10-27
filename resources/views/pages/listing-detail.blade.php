@@ -110,12 +110,24 @@
                                         'sunday' => 'Minggu',
                                     ];
                                 @endphp
-                                @foreach($listing->operational_hours as $day => $time)
-                                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                        <span class="font-medium text-slate-700">{{ $dayNames[$day] ?? ucfirst($day) }}</span>
-                                        <span class="font-bold text-indigo-600">{{ $time['open'] ?? '08:00' }} - {{ $time['close'] ?? '21:00' }} WIB</span>
+                                @if(is_array($listing->operational_hours))
+                                    @foreach($listing->operational_hours as $day => $time)
+                                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                            <span class="font-medium text-slate-700">{{ $dayNames[$day] ?? ucfirst(str_replace('_', ' ', $day)) }}</span>
+                                            <span class="font-bold text-indigo-600">
+                                                @if(is_array($time))
+                                                    {{ $time['open'] ?? '08:00' }} - {{ $time['close'] ?? '21:00' }} WIB
+                                                @else
+                                                    {{ $time }}
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 col-span-2">
+                                        <span class="font-bold text-indigo-600">{{ $listing->formatted_operational_hours }}</span>
                                     </div>
-                                @endforeach
+                                @endif
                             </div>
                         </div>
                     @endif

@@ -137,4 +137,43 @@ class Listing extends Model
                $this->capacity_available > 0 &&
                ($this->vendorProfile?->canAcceptBookings() ?? false);
     }
+
+    /**
+     * Get a human-readable formatted string for operational hours.
+     */
+    public function formattedOperationalHours(): string
+    {
+        $hours = $this->operational_hours;
+
+        if (empty($hours)) {
+            return '24 Jam Nonstop';
+        }
+
+        if (is_string($hours)) {
+            return $hours;
+        }
+
+        if (is_array($hours)) {
+            $first = reset($hours);
+            if (is_array($first) && isset($first['open'], $first['close'])) {
+                return "{$first['open']} - {$first['close']} WIB";
+            }
+
+            if (is_string($first)) {
+                return (string) $first;
+            }
+
+            return '24 Jam Nonstop';
+        }
+
+        return '24 Jam Nonstop';
+    }
+
+    /**
+     * Accessor for formatted_operational_hours.
+     */
+    public function getFormattedOperationalHoursAttribute(): string
+    {
+        return $this->formattedOperationalHours();
+    }
 }
