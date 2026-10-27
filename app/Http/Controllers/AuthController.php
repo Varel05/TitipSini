@@ -140,8 +140,10 @@ class AuthController extends Controller
             VendorProfile::create([
                 'user_id' => $user->id,
                 'business_name' => $validated['business_name'] ?? $validated['name'],
+                'phone' => $validated['phone'],
                 'address' => $validated['address'] ?? 'Alamat belum diatur',
-                'verification_status' => VendorVerificationStatus::Draft,
+                'city' => 'Jakarta',
+                'verification_status' => VendorVerificationStatus::Unverified,
                 'is_open' => false,
             ]);
         }

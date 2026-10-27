@@ -79,4 +79,52 @@ class UserRoleTest extends TestCase
         $this->assertFalse($profile->isVerified());
         $this->assertFalse($profile->canAcceptBookings());
     }
+
+    public function test_prospective_vendor_can_register_successfully(): void
+    {
+        $response = $this->post(route('register'), [
+            'name' => 'Varel Deva Dewangga',
+            'email' => 'varel.vendor@example.com',
+            'phone' => '083896693316',
+            'password' => 'Password123#',
+            'password_confirmation' => 'Password123#',
+            'role' => 'vendor',
+            'business_name' => 'Loker Penitipan Dewangga',
+            'address' => 'Jl. Malioboro No. 45',
+        ]);
+
+        $response->assertRedirect(route('vendor.dashboard'));
+        $this->assertAuthenticated();
+
+        $user = User::where('email', 'varel.vendor@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertSame(UserRole::Vendor, $user->role);
+
+        $vendorProfile = $user->vendorProfile;
+        $this->assertNotNull($vendorProfile);
+        $this->assertSame('Loker Penitipan Dewangga', $vendorProfile->business_name);
+        $this->assertSame('083896693316', $vendorProfile->phone);
+        $this->assertSame(VendorVerificationStatus::Unverified, $vendorProfile->verification_status);
+        $this->assertFalse($vendorProfile->is_open);
+    }
+
+    public function test_customer_can_register_successfully(): void
+    {
+        $response = $this->post(route('register'), [
+            'name' => 'Budi Customer',
+            'email' => 'budi.customer@example.com',
+            'phone' => '081234567890',
+            'password' => 'Password123#',
+            'password_confirmation' => 'Password123#',
+            'role' => 'customer',
+        ]);
+
+        $response->assertRedirect(route('catalog.index'));
+        $this->assertAuthenticated();
+
+        $user = User::where('email', 'budi.customer@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertSame(UserRole::Customer, $user->role);
+        $this->assertNotNull($user->customerProfile);
+    }
 }
