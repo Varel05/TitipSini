@@ -40,7 +40,7 @@ Route::redirect('/admin/dashboard', '/admin');
 Route::get('/booking/{listing:slug}', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking/{listing:slug}', [BookingController::class, 'store'])->name('booking.store');
 
-Route::get('/pesanan', [BookingController::class, 'index'])->name('booking.index');
+Route::get('/pesanan', [BookingController::class, 'index'])->name('booking.index')->middleware('auth');
 Route::get('/pesanan/{booking:booking_code}', [BookingController::class, 'show'])->name('booking.show');
 Route::get('/pesanan/{booking:booking_code}/bayar', [BookingController::class, 'pay'])->name('booking.pay');
 Route::get('/pesanan/{booking:booking_code}/checkout-simulation', [BookingController::class, 'checkoutSimulation'])->name('booking.checkout_simulation');

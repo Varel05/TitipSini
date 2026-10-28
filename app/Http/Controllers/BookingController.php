@@ -216,10 +216,10 @@ class BookingController extends Controller
      */
     public function index(): View
     {
-        $user = auth()->user() ?? User::where('role', 'customer')->first();
+        $user = auth()->user();
 
         $bookings = Booking::query()
-            ->when($user, fn ($q) => $q->where('customer_id', $user->id))
+            ->where('customer_id', $user->id)
             ->with(['listing', 'vendorProfile'])
             ->latest()
             ->paginate(10);

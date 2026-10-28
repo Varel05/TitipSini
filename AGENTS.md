@@ -171,9 +171,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
     - Superadmin memiliki modul arbitrase eksklusif untuk kasus kritis lintas daerah.
     - Otoritas pembekuan akun mitra (`suspend_vendor`), mencatat alasan penangguhan, dan memblokir mitra secara menyeluruh dari menerima booking baru di platform (`canAcceptBookings() = false`).
   - **Verifikasi Ganda (PHP Tests & Browser Interface)**:
-    - Automated Feature Tests: **87 tests, 347 assertions, 100% PASSED** (termasuk 6 skenario komprehensif di `DisputeManagementTest.php`).
+    - Automated Feature Tests: **89 tests, 352 assertions, 100% PASSED** (termasuk 6 skenario komprehensif di `DisputeManagementTest.php` dan otentikasi riwayat pesanan di `BookingTest.php`).
     - Live Browser Interaction: Skenario end-to-end (tiket 48 jam -> ajukan komplain -> booking disputed -> payout escrow hold -> admin investigasi & resolusi denda -> superadmin arbitrase fraud & pembekuan akun mitra) diverifikasi 100% PASS.
     - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
+- **Perbaikan Keamanan & Privasi Riwayat Pesanan (/pesanan)**:
+  - Menghapus dummy fallback `User::where('role', 'customer')->first()` pada `BookingController::index()`.
+  - Menerapkan middleware `auth` pada route `booking.index` (`/pesanan`), sehingga tamu anonim yang belum login otomatis dialihkan (redirect HTTP 302) ke halaman login `/login`.
+  - Memastikan pengguna yang telah login hanya dapat melihat riwayat pesanannya sendiri (`where('customer_id', auth()->id())`). Terverifikasi via test `BookingTest`.
 
 ### 2. Pending Tasks
 - **Penyelarasan Kebijakan Operasional Menyeluruh (Policy 1-19) Selesai**: Seluruh task utama (Wilayah Operasional & Boundary, Tata Kelola SKCK & Privasi, Siklus Booking & Kontak, Pembatasan QRIS & Reopen, serta Modul Sengketa & Eskalasi) telah rampung dan terverifikasi ganda. Siap untuk pengujian regresi platform menyeluruh dan rilis.

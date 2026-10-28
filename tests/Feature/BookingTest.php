@@ -196,4 +196,43 @@ class BookingTest extends TestCase
         // Capacity restored back to 5
         $this->assertSame(5, $this->listing->fresh()->capacity_available);
     }
+
+    public function test_guest_cannot_view_booking_history_and_is_redirected_to_login(): void
+    {
+        // Unauthenticated guest attempts to access /pesanan
+        $response = $this->get(route('booking.index'));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_customer_can_view_only_their_own_bookings(): void
+    {
+        $otherCustomer = User::factory()->customer()->create([
+            'name' => 'Budi Lain',
+            'email' => 'budi.lain@example.com',
+        ]);
+
+        // Booking 1 for Customer A ($this->customer)
+        $bookingCustomer = $this->bookingService->createBooking($this->customer, $this->listing, [
+            'duration_type' => 'day',
+            'duration_units' => 1,
+            'total_items' => 1,
+            'check_in_plan_at' => now()->addDay(),
+        ]);
+
+        // Booking 2 for Customer B ($otherCustomer)
+        $bookingOther = $this->bookingService->createBooking($otherCustomer, $this->listing, [
+            'duration_type' => 'day',
+            'duration_units' => 2,
+            'total_items' => 1,
+            'check_in_plan_at' => now()->addDays(2),
+        ]);
+
+        // Acting as Customer A
+        $response = $this->actingAs($this->customer)->get(route('booking.index'));
+
+        $response->assertStatus(200);
+        $response->assertSeeText($bookingCustomer->booking_code);
+        $response->assertDontSeeText($bookingOther->booking_code);
+    }
 }
