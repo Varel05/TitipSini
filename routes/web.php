@@ -45,6 +45,7 @@ Route::post('/pesanan/{booking:booking_code}/ambil', [BookingController::class, 
 Route::post('/pesanan/{booking:booking_code}/simulasi-check-in', [BookingController::class, 'simulateCheckIn'])->name('booking.simulate_checkin');
 Route::post('/pesanan/{booking:booking_code}/simulasi-bayar', [BookingController::class, 'simulatePaymentSuccess'])->name('booking.simulate_pay');
 Route::post('/pesanan/{booking:booking_code}/batal', [BookingController::class, 'cancel'])->name('booking.cancel');
+Route::post('/pesanan/{booking:booking_code}/konfirmasi-terima', [BookingController::class, 'confirmReturn'])->name('booking.confirm_return');
 
 /*
 |--------------------------------------------------------------------------
@@ -77,8 +78,11 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'role:vendor'])->g
     // Operational Bookings Queue & Handover
     Route::get('/bookings', [VendorBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking:booking_code}', [VendorBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking:booking_code}/confirm', [VendorBookingController::class, 'confirm'])->name('bookings.confirm');
+    Route::post('/bookings/{booking:booking_code}/reject', [VendorBookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking:booking_code}/checkin', [VendorBookingController::class, 'checkIn'])->name('bookings.checkin');
     Route::post('/bookings/{booking:booking_code}/handover', [VendorBookingController::class, 'handover'])->name('bookings.handover');
+    Route::post('/bookings/{booking:booking_code}/mark-returned', [VendorBookingController::class, 'markReturned'])->name('bookings.mark_returned');
 
     // Listings Management
     Route::get('/listings', [VendorListingController::class, 'index'])->name('listings.index');

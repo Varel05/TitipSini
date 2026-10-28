@@ -37,6 +37,10 @@ use Illuminate\Support\Str;
     'check_out_photo_path',
     'customer_notes',
     'cancellation_reason',
+    'rejection_reason',
+    'returned_at',
+    'auto_complete_at',
+    'customer_confirmed_at',
 ])]
 class Booking extends Model
 {
@@ -69,6 +73,9 @@ class Booking extends Model
             'check_out_plan_at' => 'datetime',
             'actual_check_in_at' => 'datetime',
             'actual_check_out_at' => 'datetime',
+            'returned_at' => 'datetime',
+            'auto_complete_at' => 'datetime',
+            'customer_confirmed_at' => 'datetime',
         ];
     }
 
@@ -162,6 +169,54 @@ class Booking extends Model
     public function isCompleted(): bool
     {
         return $this->status === BookingStatus::Completed;
+    }
+
+    /**
+     * Determine if booking is awaiting customer confirmation after vendor returns goods.
+     * Policy 8.2: Customer has 48-hour window to confirm or dispute.
+     */
+    public function isAwaitingCustomerConfirmation(): bool
+    {
+        return $this->status === BookingStatus::ReturnedByVendor;
+    }
+
+    /**
+     * Determine if customer & vendor phone contacts are mutually visible.
+     * Policy 13.1: Contacts are visible ONLY after booking is confirmed and while actively in service.
+     * Hidden during initial creation (pending confirmation) and once completed/cancelled.
+     */
+    public function canViewContacts(): bool
+    {
+        return in_array($this->status, [
+            BookingStatus::Confirmed,
+            BookingStatus::CheckedIn,
+            BookingStatus::RetrievalRequested,
+            BookingStatus::ReturnedByVendor,
+        ], true);
+    }
+
+    /**
+     * Get displayable customer phone respecting privacy rules (Policy 13.1).
+     */
+    public function getCustomerPhoneDisplay(): string
+    {
+        if (! $this->canViewContacts()) {
+            return 'Nomor kontak disembunyikan (tersedia setelah booking dikonfirmasi)';
+        }
+
+        return $this->customer?->phone ?? '-';
+    }
+
+    /**
+     * Get displayable vendor phone respecting privacy rules (Policy 13.1).
+     */
+    public function getVendorPhoneDisplay(): string
+    {
+        if (! $this->canViewContacts()) {
+            return 'Nomor kontak tersedia setelah pesanan dikonfirmasi mitra';
+        }
+
+        return $this->vendorProfile?->phone ?? $this->vendorProfile?->user?->phone ?? '-';
     }
 
     /**

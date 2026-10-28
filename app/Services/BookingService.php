@@ -100,7 +100,7 @@ class BookingService
                 'customer_id' => $customer->id,
                 'vendor_profile_id' => $lockedListing->vendor_profile_id,
                 'listing_id' => $lockedListing->id,
-                'status' => BookingStatus::Confirmed, // Automatically confirmed based on available capacity
+                'status' => $data['status'] ?? BookingStatus::Created,
                 'duration_type' => $durationType,
                 'duration_units' => $durationUnits,
                 'total_items' => $totalItems,
@@ -217,5 +217,94 @@ class BookingService
 
             return $booking->fresh();
         });
+    }
+
+    /**
+     * Vendor confirms and accepts incoming booking (Policy 8.1 Poin 4).
+     * Unlocks phone contact exchange for coordination (Policy 13.1).
+     */
+    public function confirmBooking(Booking $booking): Booking
+    {
+        return DB::transaction(function () use ($booking) {
+            $booking->update([
+                'status' => BookingStatus::Confirmed,
+            ]);
+
+            return $booking->fresh();
+        });
+    }
+
+    /**
+     * Vendor rejects incoming booking before check-in with mandatory reason (Policy 8.1 & 8.3).
+     */
+    public function rejectBooking(Booking $booking, string $reason): Booking
+    {
+        return DB::transaction(function () use ($booking, $reason) {
+            $booking->update([
+                'status' => BookingStatus::Cancelled,
+                'rejection_reason' => $reason,
+                'cancellation_reason' => $reason,
+            ]);
+
+            $booking->listing()->increment('capacity_available', $booking->total_items);
+
+            return $booking->fresh();
+        });
+    }
+
+    /**
+     * Vendor marks goods as physically returned, opening 48-hour customer confirmation window (Policy 8.2).
+     */
+    public function markReturned(Booking $booking): Booking
+    {
+        return DB::transaction(function () use ($booking) {
+            $now = now();
+            $booking->update([
+                'status' => BookingStatus::ReturnedByVendor,
+                'returned_at' => $now,
+                'auto_complete_at' => $now->copy()->addHours(48),
+            ]);
+
+            return $booking->fresh();
+        });
+    }
+
+    /**
+     * Customer confirms receipt of returned items, completing the booking (Policy 8.2).
+     * Automatically triggers vendor settlement record.
+     */
+    public function confirmReturn(Booking $booking): Booking
+    {
+        return DB::transaction(function () use ($booking) {
+            $now = now();
+            $booking->update([
+                'status' => BookingStatus::Completed,
+                'customer_confirmed_at' => $now,
+                'actual_check_out_at' => $booking->actual_check_out_at ?? $now,
+            ]);
+
+            // Release capacity back to listing
+            $booking->listing()->increment('capacity_available', $booking->total_items);
+
+            // Record vendor payout settlement
+            VendorSettlement::firstOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'vendor_profile_id' => $booking->vendor_profile_id,
+                    'amount' => $booking->vendor_earnings,
+                    'status' => SettlementStatus::Pending,
+                ]
+            );
+
+            return $booking->fresh();
+        });
+    }
+
+    /**
+     * Automatically complete booking after 48-hour window without customer complaint (Policy 8.2).
+     */
+    public function autoComplete48Hours(Booking $booking): Booking
+    {
+        return $this->confirmReturn($booking);
     }
 }

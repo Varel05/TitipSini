@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\Listing;
 use App\Models\User;
@@ -178,6 +179,26 @@ class BookingController extends Controller
 
         return redirect()->route('booking.show', $booking->booking_code)
             ->with('info', 'Pesanan penitipan telah dibatalkan.');
+    }
+
+    /**
+     * Customer confirms receipt of returned goods (Policy 8.2).
+     */
+    public function confirmReturn(Booking $booking): RedirectResponse
+    {
+        $this->bookingService->confirmReturn($booking);
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'customer_confirmed_return_completed',
+            'auditable_type' => Booking::class,
+            'auditable_id' => $booking->id,
+            'new_values' => ['status' => 'completed'],
+            'ip_address' => request()->ip(),
+        ]);
+
+        return redirect()->route('booking.show', $booking->booking_code)
+            ->with('success', 'Terima kasih telah mengonfirmasi penerimaan barang Anda! Layanan penitipan telah selesai.');
     }
 
     /**

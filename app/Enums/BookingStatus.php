@@ -8,7 +8,9 @@ enum BookingStatus: string
     case Confirmed = 'confirmed';
     case CheckedIn = 'checked_in';
     case RetrievalRequested = 'retrieval_requested';
+    case ReturnedByVendor = 'returned_by_vendor';
     case Completed = 'completed';
+    case Disputed = 'disputed';
     case Cancelled = 'cancelled';
     case Expired = 'expired';
 
@@ -22,7 +24,9 @@ enum BookingStatus: string
             self::Confirmed => 'Dikonfirmasi (Siap Drop)',
             self::CheckedIn => 'Barang Tersimpan (Tersegel)',
             self::RetrievalRequested => 'Pengambilan Diajukan (Menunggu Bayar)',
-            self::Completed => 'Selesai & Barang Diambil',
+            self::ReturnedByVendor => 'Barang Dikembalikan Mitra (Menunggu Konfirmasi 48 Jam)',
+            self::Completed => 'Selesai & Barang Diterima',
+            self::Disputed => 'Dalam Sengketa / Komplain',
             self::Cancelled => 'Dibatalkan',
             self::Expired => 'Kadaluarsa',
         };
@@ -38,7 +42,9 @@ enum BookingStatus: string
             self::Confirmed => 'bg-blue-50 text-blue-700 border-blue-200',
             self::CheckedIn => 'bg-indigo-50 text-indigo-700 border-indigo-200',
             self::RetrievalRequested => 'bg-purple-50 text-purple-700 border-purple-200',
+            self::ReturnedByVendor => 'bg-sky-50 text-sky-700 border-sky-200',
             self::Completed => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            self::Disputed => 'bg-orange-50 text-orange-700 border-orange-200',
             self::Cancelled => 'bg-rose-50 text-rose-700 border-rose-200',
             self::Expired => 'bg-slate-100 text-slate-600 border-slate-200',
         };

@@ -102,7 +102,7 @@ class BookingTest extends TestCase
             'customer_id' => $this->customer->id,
             'listing_id' => $this->listing->id,
             'total_items' => 1,
-            'status' => BookingStatus::Confirmed->value,
+            'status' => BookingStatus::Created->value,
             'storage_fee' => 70000.00,
             'platform_fee' => 14000.00,
             'vendor_earnings' => 56000.00,
@@ -127,7 +127,7 @@ class BookingTest extends TestCase
 
     public function test_booking_lifecycle_transitions(): void
     {
-        // 1. Create booking
+        // 1. Create booking (Initial Created state per Policy 8.1)
         $booking = $this->bookingService->createBooking($this->customer, $this->listing, [
             'duration_type' => 'day',
             'duration_units' => 1,
@@ -135,8 +135,12 @@ class BookingTest extends TestCase
             'check_in_plan_at' => now()->format('Y-m-d H:i'),
         ]);
 
-        $this->assertSame(BookingStatus::Confirmed, $booking->status);
+        $this->assertSame(BookingStatus::Created, $booking->status);
         $this->assertSame(4, $this->listing->fresh()->capacity_available);
+
+        // Vendor confirms booking
+        $booking = $this->bookingService->confirmBooking($booking);
+        $this->assertSame(BookingStatus::Confirmed, $booking->status);
 
         // 2. Physical Check-in & Seal attachment
         $booking = $this->bookingService->checkIn($booking, 'SEAL-TEST-9988');

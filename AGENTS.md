@@ -151,52 +151,47 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ### 1. Current Status
 - **Task 1: Struktur Wilayah Operasional & Data Boundary (Policies 2.1, 3.1, 13.2, 13.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 9056815`).
-- **Task 2: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) Selesai**:
-  - **Skema & Model Akses SKCK**: Membuat migration kolom-kolom SKCK (`skck_path`, `skck_issued_at`, `skck_expires_at`, `skck_grace_period_ends_at`, `skck_verified_at`, `skck_status`, `skck_pruned_at`, `revision_notes`, `privacy_anonymized_at`) pada `vendor_profiles` dan tabel `skck_access_requests`.
-  - **Status Verifikasi Vendor & Revisi (Policy 6.1)**:
-    - Menambahkan enum case `VendorVerificationStatus::NeedsRevision`.
-    - Menambahkan aksi `requestRevision` pada `AdminVendorKycController` untuk mengembalikan pendaftaran vendor dengan catatan perbaikan yang jelas.
-  - **Kebijakan Masa Berlaku & 30-Day Grace Period (Policy 6.2)**:
-    - Vendor tetap diizinkan menerima booking selama 30 hari masa tenggang pasca-SKCK kedaluwarsa (`isInSkckGracePeriod()`).
-    - Bila masa tenggang 30 hari terlampaui tanpa perpanjangan terverifikasi, sistem memblokir vendor dari menerima booking baru (`isSkckBlocked()`, `canAcceptBookings() = false`).
-    - Artisan Command `php artisan titipsini:check-skck-expiry` untuk mengaudit masa berlaku, memperbarui status otomatis, dan memblokir booking secara terjadwal.
-  - **Akses Dokumen Berbatas Waktu & Privasi (Policy 6.3)**:
-    - Admin biasa dilarang membuka atau mengunduh berkas fisik SKCK mentah (HTTP 403 Forbidden).
-    - Mekanisme pengajuan izin akses ke Superadmin (`POST /admin/vendors/{vendor}/skck-request`) dengan pencatatan alasan wajib.
-    - Superadmin mengotorisasi akses berbatas waktu (2 jam) melalui modul `AdminSkckAccessController` (`/admin/skck-requests`).
-    - Setiap unduhan atau akses dokumen dicatat immutable di `audit_logs`.
-    - Auto-prune retensi SKCK: dokumen fisik dibersihkan otomatis dari storage 7 hari setelah verifikasi selesai (`skck_pruned_at`).
-    - Fitur Privacy Request: mekanisme pembersihan berkas KTP dan SKCK atas permintaan mitra vendor (`privacyAnonymize`).
-    - Masking NIK: nomor identitas KTP dimasking di seluruh antarmuka admin (`3171********0001`).
+- **Task 2: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: db79954`).
+- **Task 3: Siklus Booking Granular & Privasi Kontak (Policies 8, 13.1, & 15.1) Selesai**:
+  - **Skema & Kolom Database**: Migration `add_lifecycle_and_confirmation_to_bookings_table` menambahkan `returned_at`, `auto_complete_at`, `customer_confirmed_at`, dan `rejection_reason` pada `bookings`.
+  - **Status Siklus Booking Terpadu (Policy 8.1)**:
+    - Menambahkan enum case `ReturnedByVendor` dan `Disputed` pada `BookingStatus`.
+    - Pesanan baru berstatus awal `BookingStatus::Created` (belum dikonfirmasi mitra, tanpa pembayaran upfront).
+    - Mitra memiliki modul persetujuan untuk menerima (`confirm`) atau menolak (`reject` disertai alasan wajib, kapasitas slot dipulihkan).
+  - **Privasi Kontak & Masking Nomor Telepon (Policy 13.1)**:
+    - Sebelum status `Confirmed`, nomor telepon kedua belah pihak disembunyikan/dimasking (`Nomor kontak disembunyikan`).
+    - Setelah mitra mengonfirmasi (`Confirmed`) sampai serah terima berlangsung (`CheckedIn`, `RetrievalRequested`, `ReturnedByVendor`), nomor kontak terbuka dua arah bagi mitra dan pelanggan untuk kebutuhan koordinasi kedatangan.
+    - Setelah pesanan berstatus `Completed` atau `Cancelled`, nomor kontak ditutup kembali demi kepatuhan privasi (PDP).
+  - **Jendela Konfirmasi 48 Jam & Penyerahan Fisik (Policy 8.2)**:
+    - Mitra menandai barang telah diserahkan kembali fisik (`ReturnedByVendor`).
+    - Membuka jendela 48 jam bagi pelanggan untuk memeriksa barang dan mengonfirmasi penerimaan (`confirmReturn`).
+    - Artisan Command `php artisan titipsini:check-return-confirmations` menyelesaikan pesanan otomatis bila tidak ada komplain dalam 48 jam (`auto_complete_at`), sekaligus membukukan `vendor_settlements`.
   - **Verifikasi Ganda (PHP Tests & Browser Interface)**:
-    - Automated Feature Tests: **68 tests, 245 assertions, 100% PASSED** (termasuk 8 skenario pengujian di `SkckGovernanceTest.php`).
-    - Live Browser Crawler: Memvalidasi form request, approval Superadmin, negative 403 forbidden check, dan unblocking download pasca-approval.
+    - Automated Feature Tests: **75 tests, 279 assertions, 100% PASSED** (termasuk 7 skenario pengujian di `BookingLifecyclePrivacyTest.php`).
+    - Live Browser Interaction: Skenario end-to-end (masking -> terima pesanan -> kontak terbuka -> check-in -> bayar -> mitra tandai kembali -> jendela 48 jam -> konfirmasi pelanggan -> completed -> masking tertutup) berhasil diverifikasi 100% PASS.
     - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Task 3**: Siklus Booking Granular & Privasi Kontak (Policies 8 & 13.1) - Implementasi status 11 tahap (Submitted, Admin Reviewed, Confirmed, Check-in, Completed, dll) dan pemaskingan nomor WhatsApp/kontak sebelum booking status Confirmed.
-- **Task 4**: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2) - Implementasi batas 3x percobaan QRIS Xendit, invoice expired 15 menit, dan otorisasi tombol Reopen oleh Admin bila invoice kedaluwarsa.
-- **Task 5**: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11) - Implementasi modul pelaporan masalah barang rusak/hilang, penahanan pencairan dana vendor (escrow hold), pembekuan akun mitra, dan eskalasi Superadmin.
+- **Task 4: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2)**: Implementasi batas 3x percobaan QRIS Xendit, invoice expired 15 menit, dan otorisasi tombol Reopen oleh Admin bila invoice kedaluwarsa.
+- **Task 5: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11)**: Implementasi modul pelaporan masalah barang rusak/hilang, penahanan pencairan dana vendor (escrow hold), pembekuan akun mitra, dan eskalasi Superadmin.
 
 ### 3. Architectural Decisions
-- **Time-Bound Ephemeral Document Authorization**: Berkas hukum sensitif seperti SKCK tidak boleh bebas diunduh kapan saja oleh admin operasional. Menggunakan persetujuan Superadmin dengan jendela akses aktif 2 jam dan pencatatan audit trail menjamin perlindungan privasi mitra dan kepatuhan regulasi PDP (Pelindungan Data Pribadi).
-- **Grace Period Preservation (Zero Disruption Model)**: Masa tenggang 30 hari memungkinkan mitra yang memiliki reputasi baik tetap melayani pelanggan tanpa disrupsi operasional tiba-tiba, sambil memberikan waktu pembaruan dokumen kepolisian.
-- **7-Day Auto-Pruning Retention**: Dokumen fisik tidak disimpan selamanya di storage aktif. Setelah 7 hari verifikasi berhasil, berkas fisik dihapus untuk meminimalkan risiko kebocoran data (data minimisation principle).
+- **Contact Privacy Invariance (Policy 13.1)**: Perlindungan nomor telepon pelanggan dan mitra ditegakkan secara deklaratif pada model `Booking::canViewContacts()`, mencegah kebocoran data di luar rentang koordinasi operasional aktif.
+- **48-Hour Fair-Handover Window (Policy 8.2)**: Status `ReturnedByVendor` menjamin barang telah diserahterimakan tanpa memotong hak komplain pelanggan atau menahan payout vendor tanpa batas waktu.
 
 ### 4. Active Diffs
-- `app/Enums/VendorVerificationStatus.php`
-- `app/Models/VendorProfile.php`
-- `app/Models/SkckAccessRequest.php`
-- `app/Console/Commands/CheckSkckExpiryCommand.php`
-- `app/Http/Controllers/Admin/AdminVendorKycController.php`
-- `app/Http/Controllers/Admin/AdminSkckAccessController.php`
+- `app/Enums/BookingStatus.php`
+- `app/Models/Booking.php`
+- `app/Services/BookingService.php`
+- `app/Http/Controllers/Vendor/VendorBookingController.php`
+- `app/Http/Controllers/BookingController.php`
+- `app/Console/Commands/CheckReturnConfirmationsCommand.php`
 - `routes/web.php`
-- `resources/views/layouts/admin.blade.php`
-- `resources/views/pages/admin/vendors/show.blade.php`
-- `resources/views/pages/admin/skck-requests/index.blade.php`
-- `database/migrations/2026_10_28_123253_add_skck_and_privacy_to_vendor_profiles_table.php`
-- `database/migrations/2026_10_28_123254_create_skck_access_requests_table.php`
-- `tests/Feature/SkckGovernanceTest.php`
+- `resources/views/pages/vendor/bookings/show.blade.php`
+- `resources/views/pages/booking/show.blade.php`
+- `database/migrations/2026_10_28_124554_add_lifecycle_and_confirmation_to_bookings_table.php`
+- `tests/Feature/BookingLifecyclePrivacyTest.php`
+- `tests/Feature/BookingTest.php`
 - `AGENTS.md`
 
 

@@ -142,9 +142,17 @@
                                     <span class="text-slate-400">Alamat</span>
                                     <span class="font-medium text-slate-800 text-right max-w-xs">{{ $booking->listing->address }}</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-400">Telepon Mitra</span>
-                                    <span class="font-medium text-slate-800">{{ $booking->vendorProfile->phone }}</span>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">Telepon / WhatsApp Mitra</span>
+                                    @if($booking->canViewContacts())
+                                        <span class="font-bold text-slate-900 font-mono flex items-center gap-1">
+                                            <i class="bi bi-whatsapp text-emerald-600"></i> {{ $booking->vendorProfile->phone }}
+                                        </span>
+                                    @else
+                                        <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                            <i class="bi bi-eye-slash-fill"></i> {{ $booking->getVendorPhoneDisplay() }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -278,6 +286,36 @@
                                     </a>
                                 </div>
                                 <span class="text-[11px] text-purple-700 block">Dukungan: QRIS (GoPay, OVO, Dana), BCA/Mandiri/BRI Virtual Account. Mitra akan menerima notifikasi pelunasan seketika.</span>
+                            </div>
+                        @endif
+
+                        <!-- Action: When Goods Returned by Vendor (Awaiting Customer Confirmation 48h - Policy 8.2) -->
+                        @if($booking->status->value === 'returned_by_vendor')
+                            <div class="p-6 rounded-2xl bg-sky-50 border-2 border-sky-300 space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center text-xl flex-shrink-0">
+                                        <i class="bi bi-box2-heart-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-sky-950">Mitra Telah Menyerahkan Barang Kembali</h4>
+                                        <p class="text-xs text-sky-800">
+                                            Mohon periksa kondisi fisik dan kelengkapan barang Anda. Sesuai Kebijakan 8.2, Anda memiliki waktu 48 jam (hingga {{ $booking->auto_complete_at?->translatedFormat('d M Y, H:i') }} WIB) untuk mengonfirmasi atau mengajukan keluhan.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-3 pt-2">
+                                    <form action="{{ route('booking.confirm_return', $booking->booking_code) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/25 flex items-center gap-2 transition active:scale-95">
+                                            <i class="bi bi-check2-circle text-base"></i> Konfirmasi Barang Telah Diterima dengan Baik
+                                        </button>
+                                    </form>
+
+                                    <a href="{{ route('faq') }}" class="px-4 py-3 rounded-xl bg-white border border-sky-300 text-sky-800 font-bold text-xs hover:bg-sky-100 transition">
+                                        <i class="bi bi-question-circle"></i> Butuh Bantuan / Komplain
+                                    </a>
+                                </div>
                             </div>
                         @endif
 

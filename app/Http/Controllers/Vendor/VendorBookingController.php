@@ -150,4 +150,82 @@ class VendorBookingController extends Controller
         return redirect()->route('vendor.bookings.show', $booking->booking_code)
             ->with('success', 'Serah terima barang selesai! Status pesanan kini Selesai dan payout Rp '.number_format($booking->vendor_earnings, 0, ',', '.').' diteruskan ke rekening Anda.');
     }
+
+    /**
+     * Vendor accepts and confirms incoming reservation (Policy 8.1 Poin 4).
+     */
+    public function confirm(Request $request, Booking $booking): RedirectResponse
+    {
+        $this->bookingService->confirmBooking($booking);
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'vendor_booking_confirmed',
+            'auditable_type' => Booking::class,
+            'auditable_id' => $booking->id,
+            'new_values' => ['status' => 'confirmed'],
+            'ip_address' => $request->ip(),
+        ]);
+
+        return redirect()->route('vendor.bookings.show', $booking->booking_code)
+            ->with('success', 'Pesanan penitipan berhasil diterima! Nomor kontak pelanggan kini dapat dilihat untuk koordinasi.');
+    }
+
+    /**
+     * Vendor rejects incoming reservation with reason (Policy 8.1 & 8.3).
+     */
+    public function reject(Request $request, Booking $booking): RedirectResponse
+    {
+        $request->validate([
+            'rejection_reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $reason = $request->input('rejection_reason');
+        $this->bookingService->rejectBooking($booking, $reason);
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'vendor_booking_rejected',
+            'auditable_type' => Booking::class,
+            'auditable_id' => $booking->id,
+            'new_values' => [
+                'status' => 'cancelled',
+                'reason' => $reason,
+            ],
+            'ip_address' => $request->ip(),
+        ]);
+
+        return redirect()->route('vendor.bookings.show', $booking->booking_code)
+            ->with('info', 'Pesanan penitipan telah ditolak.');
+    }
+
+    /**
+     * Vendor marks goods as physically returned (Policy 8.2).
+     */
+    public function markReturned(Request $request, Booking $booking): RedirectResponse
+    {
+        $latestPayment = $booking->paymentAttempts()->latest()->first();
+
+        // Strict verification: Payment must be Paid before release
+        if (! $latestPayment || $latestPayment->status !== PaymentStatus::Paid) {
+            return back()->with('error', 'PERINGATAN: Barang tidak boleh diserahkan! Pembayaran tagihan Xendit belum berstatus Lunas.');
+        }
+
+        $this->bookingService->markReturned($booking);
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'vendor_goods_marked_returned',
+            'auditable_type' => Booking::class,
+            'auditable_id' => $booking->id,
+            'new_values' => [
+                'status' => 'returned_by_vendor',
+                'returned_at' => now()->toIso8601String(),
+            ],
+            'ip_address' => $request->ip(),
+        ]);
+
+        return redirect()->route('vendor.bookings.show', $booking->booking_code)
+            ->with('success', 'Barang berhasil ditandai telah dikembalikan! Customer memiliki waktu 48 jam untuk konfirmasi penerimaan barang.');
+    }
 }
