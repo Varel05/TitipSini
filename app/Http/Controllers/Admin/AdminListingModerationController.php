@@ -17,10 +17,13 @@ class AdminListingModerationController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
         $statusFilter = $request->query('status');
         $search = $request->query('q');
 
-        $listings = Listing::query()
+        $baseQuery = Listing::query()->forAdminRegion($user);
+
+        $listings = (clone $baseQuery)
             ->when($statusFilter && $statusFilter !== 'all', function ($q) use ($statusFilter) {
                 $q->where('status', $statusFilter);
             })
@@ -31,17 +34,17 @@ class AdminListingModerationController extends Controller
                         ->orWhereHas('vendorProfile', fn ($v) => $v->where('business_name', 'like', "%{$search}%"));
                 });
             })
-            ->with(['vendorProfile', 'category', 'facilities'])
+            ->with(['vendorProfile', 'category', 'facilities', 'operationalRegion'])
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
         $counts = [
-            'all' => Listing::count(),
-            'submitted' => Listing::where('status', ListingStatus::Submitted)->count(),
-            'published' => Listing::where('status', ListingStatus::Published)->count(),
-            'draft' => Listing::where('status', ListingStatus::Draft)->count(),
-            'rejected' => Listing::where('status', ListingStatus::Rejected)->count(),
+            'all' => (clone $baseQuery)->count(),
+            'submitted' => (clone $baseQuery)->where('status', ListingStatus::Submitted)->count(),
+            'published' => (clone $baseQuery)->where('status', ListingStatus::Published)->count(),
+            'draft' => (clone $baseQuery)->where('status', ListingStatus::Draft)->count(),
+            'rejected' => (clone $baseQuery)->where('status', ListingStatus::Rejected)->count(),
         ];
 
         return view('pages.admin.listings.index', [
@@ -49,6 +52,7 @@ class AdminListingModerationController extends Controller
             'counts' => $counts,
             'currentStatus' => $statusFilter ?? 'all',
             'search' => $search,
+            'assignedRegion' => $user->assignedRegion,
         ]);
     }
 
@@ -57,7 +61,9 @@ class AdminListingModerationController extends Controller
      */
     public function show(Listing $listing): View
     {
-        $listing->load(['vendorProfile.user', 'category', 'facilities', 'images', 'slots']);
+        $this->authorizeRegionalAccess($listing);
+
+        $listing->load(['vendorProfile.user', 'category', 'facilities', 'images', 'slots', 'operationalRegion']);
 
         return view('pages.admin.listings.show', [
             'listing' => $listing,
@@ -69,6 +75,8 @@ class AdminListingModerationController extends Controller
      */
     public function publish(Request $request, Listing $listing): RedirectResponse
     {
+        $this->authorizeRegionalAccess($listing);
+
         $listing->update([
             'status' => ListingStatus::Published,
             'published_at' => now(),
@@ -95,6 +103,8 @@ class AdminListingModerationController extends Controller
      */
     public function reject(Request $request, Listing $listing): RedirectResponse
     {
+        $this->authorizeRegionalAccess($listing);
+
         $listing->update([
             'status' => ListingStatus::Rejected,
         ]);
@@ -113,5 +123,29 @@ class AdminListingModerationController extends Controller
 
         return redirect()->route('admin.listings.show', $listing->id)
             ->with('info', "Listing '{$listing->title}' ditolak / dinonaktifkan dari katalog publik.");
+    }
+
+    /**
+     * Authorize that the authenticated admin is allowed to access/moderate this listing.
+     */
+    protected function authorizeRegionalAccess(Listing $listing): void
+    {
+        $user = auth()->user();
+
+        if ($user->isSuperadmin()) {
+            return;
+        }
+
+        $region = $user->assignedRegion;
+        if (! $region) {
+            abort(403, 'Akses ditolak: Akun admin Anda belum ditugaskan ke wilayah operasional aktif.');
+        }
+
+        $isCovered = ($listing->operational_region_id === $region->id)
+            || (! empty($region->cities) && in_array($listing->city, $region->cities, true));
+
+        if (! $isCovered) {
+            abort(403, 'Akses ditolak: Listing ini berada di luar cakupan wilayah operasional yang Anda kelola.');
+        }
     }
 }

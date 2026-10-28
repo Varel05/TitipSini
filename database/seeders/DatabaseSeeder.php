@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\CustomerProfile;
 use App\Models\Facility;
 use App\Models\Listing;
+use App\Models\OperationalRegion;
 use App\Models\StorageSlot;
 use App\Models\User;
 use App\Models\VendorProfile;
@@ -48,6 +49,32 @@ class DatabaseSeeder extends Seeder
                 'phone' => '081234567891',
                 'email_verified_at' => now(),
                 'is_active' => true,
+            ]
+        );
+
+        // 2b. Operational Regions (Data Boundary per Policies 2.1 & 3.1)
+        $regionJkt = OperationalRegion::firstOrCreate(
+            ['code' => 'REG-JKT'],
+            [
+                'name' => 'Wilayah Khusus Ibukota Jakarta & Sekitarnya',
+                'admin_id' => $admin->id,
+                'provinces' => ['DKI Jakarta'],
+                'cities' => ['Jakarta Pusat', 'Jakarta Selatan', 'Jakarta Barat', 'Jakarta Timur', 'Jakarta Utara', 'Kepulauan Seribu'],
+                'is_active' => true,
+                'is_under_supervision' => false,
+            ]
+        );
+
+        $regionDiy = OperationalRegion::firstOrCreate(
+            ['code' => 'REG-DIY'],
+            [
+                'name' => 'Wilayah DI Yogyakarta & Surakarta',
+                'admin_id' => null,
+                'provinces' => ['DI Yogyakarta', 'Jawa Tengah'],
+                'cities' => ['Yogyakarta', 'Sleman', 'Bantul', 'Gunungkidul', 'Kulon Progo', 'Surakarta', 'Solo'],
+                'is_active' => true,
+                'is_under_supervision' => true,
+                'supervision_notes' => 'Wilayah dalam pengawasan langsung Superadmin TitipSini nasional menunggu penetapan admin definitif.',
             ]
         );
 
@@ -219,6 +246,7 @@ class DatabaseSeeder extends Seeder
         $listing1 = Listing::firstOrCreate(
             ['slug' => 'loker-penitipan-traveling-stasiun-gambir'],
             [
+                'operational_region_id' => $regionJkt->id,
                 'vendor_profile_id' => $vendor1->id,
                 'category_id' => $categories['penitipan-traveling']->id,
                 'title' => 'Loker Penitipan Traveling Stasiun Gambir',
@@ -276,6 +304,7 @@ class DatabaseSeeder extends Seeder
         $listing2 = Listing::firstOrCreate(
             ['slug' => 'penitipan-barang-kos-semester-tebet'],
             [
+                'operational_region_id' => $regionJkt->id,
                 'vendor_profile_id' => $vendor1->id,
                 'category_id' => $categories['penitipan-barang-kos']->id,
                 'title' => 'Gudang Titip Barang Kos Liburan Tebet Hub',
@@ -332,6 +361,7 @@ class DatabaseSeeder extends Seeder
         $listing3 = Listing::firstOrCreate(
             ['slug' => 'penitipan-kendaraan-aman-sudirman-hub'],
             [
+                'operational_region_id' => $regionJkt->id,
                 'vendor_profile_id' => $vendor2->id,
                 'category_id' => $categories['penitipan-kendaraan']->id,
                 'title' => 'Penitipan Motor & Mobil Aman Sudirman Hub',
@@ -376,6 +406,7 @@ class DatabaseSeeder extends Seeder
         $listing4 = Listing::firstOrCreate(
             ['slug' => 'jasa-pindahan-kost-kontrakan-express'],
             [
+                'operational_region_id' => $regionJkt->id,
                 'vendor_profile_id' => $vendor2->id,
                 'category_id' => $categories['pindahan-kost-kontrakan']->id,
                 'title' => 'Jasa Pindahan Kost & Kontrakan Armada Express',
@@ -418,6 +449,7 @@ class DatabaseSeeder extends Seeder
         $listing5 = Listing::firstOrCreate(
             ['slug' => 'jasa-security-patroli-rumah-kosong-jakarta'],
             [
+                'operational_region_id' => $regionJkt->id,
                 'vendor_profile_id' => $vendor1->id,
                 'category_id' => $categories['jasa-security-rumah']->id,
                 'title' => 'Jasa Security & Patroli Rumah Kosong Profesional',
@@ -460,6 +492,7 @@ class DatabaseSeeder extends Seeder
         $listing6 = Listing::firstOrCreate(
             ['slug' => 'jasa-angkut-logistik-kkn-mahasiswa'],
             [
+                'operational_region_id' => $regionDiy->id,
                 'vendor_profile_id' => $vendor2->id,
                 'category_id' => $categories['jasa-angkut-barang-anak-kkn']->id,
                 'title' => 'Jasa Angkut Logistik & Barang KKN Mahasiswa',

@@ -8,6 +8,7 @@ use App\Enums\VendorVerificationStatus;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Listing;
+use App\Models\OperationalRegion;
 use App\Models\User;
 use App\Models\VendorProfile;
 use App\Models\VendorSettlement;
@@ -45,6 +46,15 @@ class AdminDashboardTest extends TestCase
             'email' => 'opsadmin@example.com',
         ]);
 
+        $region = OperationalRegion::create([
+            'name' => 'Wilayah Jakarta Selatan',
+            'code' => 'REG-JS',
+            'admin_id' => $this->admin->id,
+            'cities' => ['Jakarta Selatan'],
+            'provinces' => ['DKI Jakarta'],
+            'is_active' => true,
+        ]);
+
         $this->customer = User::factory()->customer()->create([
             'name' => 'Customer Biasa',
             'email' => 'customer@example.com',
@@ -58,6 +68,7 @@ class AdminDashboardTest extends TestCase
         $this->vendorProfile = VendorProfile::factory()->create([
             'user_id' => $this->vendorUser->id,
             'business_name' => 'Loker Manggarai Express',
+            'city' => 'Jakarta Selatan',
             'verification_status' => VendorVerificationStatus::Pending,
             'is_open' => false,
             'bank_name' => 'BCA',
@@ -73,6 +84,7 @@ class AdminDashboardTest extends TestCase
 
         $this->listing = Listing::create([
             'vendor_profile_id' => $this->vendorProfile->id,
+            'operational_region_id' => $region->id,
             'category_id' => $category->id,
             'title' => 'Loker Manggarai Lantai 1',
             'slug' => 'loker-manggarai-lantai-1',
@@ -226,7 +238,7 @@ class AdminDashboardTest extends TestCase
         $this->assertSame(SettlementStatus::Settled, $settlement->fresh()->status);
     }
 
-    public function test_admin_can_view_system_audit_logs(): void
+    public function test_admin_is_forbidden_and_superadmin_can_view_system_audit_logs(): void
     {
         AuditLog::create([
             'user_id' => $this->admin->id,
@@ -237,7 +249,12 @@ class AdminDashboardTest extends TestCase
             'ip_address' => '127.0.0.1',
         ]);
 
-        $response = $this->actingAs($this->admin)->get(route('admin.audit_logs.index'));
+        // Policy 13.2: Operational Admin must be denied
+        $forbiddenResponse = $this->actingAs($this->admin)->get(route('admin.audit_logs.index'));
+        $forbiddenResponse->assertForbidden();
+
+        // Superadmin is authorized to inspect audit logs
+        $response = $this->actingAs($this->superadmin)->get(route('admin.audit_logs.index'));
         $response->assertOk();
         $response->assertSeeText('admin_system_test_action');
     }

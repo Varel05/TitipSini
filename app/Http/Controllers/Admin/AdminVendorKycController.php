@@ -17,10 +17,13 @@ class AdminVendorKycController extends Controller
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
         $statusFilter = $request->query('status');
         $search = $request->query('q');
 
-        $vendors = VendorProfile::query()
+        $baseQuery = VendorProfile::query()->forAdminRegion($user);
+
+        $vendors = (clone $baseQuery)
             ->when($statusFilter && $statusFilter !== 'all', function ($q) use ($statusFilter) {
                 $q->where('verification_status', $statusFilter);
             })
@@ -37,11 +40,11 @@ class AdminVendorKycController extends Controller
             ->withQueryString();
 
         $counts = [
-            'all' => VendorProfile::count(),
-            'pending' => VendorProfile::where('verification_status', VendorVerificationStatus::Pending)->count(),
-            'verified' => VendorProfile::where('verification_status', VendorVerificationStatus::Verified)->count(),
-            'rejected' => VendorProfile::where('verification_status', VendorVerificationStatus::Rejected)->count(),
-            'unverified' => VendorProfile::where('verification_status', VendorVerificationStatus::Unverified)->count(),
+            'all' => (clone $baseQuery)->count(),
+            'pending' => (clone $baseQuery)->where('verification_status', VendorVerificationStatus::Pending)->count(),
+            'verified' => (clone $baseQuery)->where('verification_status', VendorVerificationStatus::Verified)->count(),
+            'rejected' => (clone $baseQuery)->where('verification_status', VendorVerificationStatus::Rejected)->count(),
+            'unverified' => (clone $baseQuery)->where('verification_status', VendorVerificationStatus::Unverified)->count(),
         ];
 
         return view('pages.admin.vendors.index', [
@@ -49,6 +52,7 @@ class AdminVendorKycController extends Controller
             'counts' => $counts,
             'currentStatus' => $statusFilter ?? 'all',
             'search' => $search,
+            'assignedRegion' => $user->assignedRegion,
         ]);
     }
 
@@ -57,6 +61,8 @@ class AdminVendorKycController extends Controller
      */
     public function show(VendorProfile $vendor): View
     {
+        $this->authorizeRegionalAccess($vendor);
+
         $vendor->load(['user', 'verifier', 'listings.category']);
 
         return view('pages.admin.vendors.show', [
@@ -69,6 +75,8 @@ class AdminVendorKycController extends Controller
      */
     public function approve(Request $request, VendorProfile $vendor): RedirectResponse
     {
+        $this->authorizeRegionalAccess($vendor);
+
         $vendor->update([
             'verification_status' => VendorVerificationStatus::Verified,
             'verified_at' => now(),
@@ -98,6 +106,8 @@ class AdminVendorKycController extends Controller
      */
     public function reject(Request $request, VendorProfile $vendor): RedirectResponse
     {
+        $this->authorizeRegionalAccess($vendor);
+
         $request->validate([
             'rejection_reason' => ['required', 'string', 'max:500'],
         ]);
@@ -127,5 +137,26 @@ class AdminVendorKycController extends Controller
 
         return redirect()->route('admin.vendors.show', $vendor->id)
             ->with('info', "Verifikasi mitra '{$vendor->business_name}' telah ditolak dengan alasan yang tercatat.");
+    }
+
+    /**
+     * Authorize that the authenticated admin is allowed to access/moderate this vendor.
+     */
+    protected function authorizeRegionalAccess(VendorProfile $vendor): void
+    {
+        $user = auth()->user();
+
+        if ($user->isSuperadmin()) {
+            return;
+        }
+
+        $region = $user->assignedRegion;
+        if (! $region) {
+            abort(403, 'Akses ditolak: Akun admin Anda belum ditugaskan ke wilayah operasional aktif.');
+        }
+
+        if (! $vendor->isInRegion($region)) {
+            abort(403, 'Akses ditolak: Berkas KYC mitra berada di luar wilayah operasional Anda.');
+        }
     }
 }

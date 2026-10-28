@@ -10,10 +10,29 @@
     <div class="bg-gradient-to-r from-slate-950 via-purple-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg border border-purple-900/30">
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-                <span class="text-xs uppercase font-bold text-purple-400 tracking-wider">Pusat Kendali Eksekutif</span>
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Platform Marketplace TitipSini</h2>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs uppercase font-bold text-purple-400 tracking-wider">Pusat Kendali Eksekutif</span>
+                    @if($isSuperadmin)
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            <i class="bi bi-globe2"></i> Cakupan Nasional
+                        </span>
+                    @elseif($assignedRegion)
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            <i class="bi bi-geo-alt-fill"></i> Wilayah: {{ $assignedRegion->name }} ({{ $assignedRegion->code }})
+                        </span>
+                    @else
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                            <i class="bi bi-exclamation-octagon"></i> Belum Memiliki Wilayah Penugasan
+                        </span>
+                    @endif
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Platform Marketplace TitipSini</h2>
                 <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-                    Monitoring operasional real-time, rekonsiliasi finansial bagi hasil 20/80, verifikasi KYC mitra, dan tata kelola keamanan.
+                    @if($isSuperadmin)
+                        Monitoring operasional real-time seluruh Indonesia, rekonsiliasi finansial bagi hasil 20/80, verifikasi KYC mitra, dan tata kelola pengawasan sistem.
+                    @else
+                        Monitoring operasional regional, verifikasi KYC mitra lokal, moderasi listing di wilayah {{ $assignedRegion->name ?? 'operasional' }}.
+                    @endif
                 </p>
             </div>
 
@@ -21,9 +40,11 @@
                 <a href="{{ route('admin.vendors.index', ['status' => 'pending']) }}" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition flex items-center gap-2">
                     <i class="bi bi-shield-check"></i> Antrian KYC ({{ $pendingKycCount }})
                 </a>
-                <a href="{{ route('admin.finance.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs transition">
-                    Rekonsiliasi Finansial &rarr;
-                </a>
+                @if($isSuperadmin)
+                    <a href="{{ route('admin.finance.index') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs transition">
+                        Rekonsiliasi Finansial &rarr;
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -139,7 +160,8 @@
         @endif
     </div>
 
-    <!-- Recent System Audit Trail -->
+    @if($isSuperadmin)
+    <!-- Recent System Audit Trail (Superadmin Exclusive) -->
     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
@@ -180,6 +202,7 @@
             </table>
         </div>
     </div>
+    @endif
 
 </div>
 @endsection

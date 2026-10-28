@@ -52,6 +52,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the operational region assigned to this admin.
+     */
+    public function assignedRegion(): HasOne
+    {
+        return $this->hasOne(OperationalRegion::class, 'admin_id');
+    }
+
+    /**
+     * Get the bookings made by this user as a customer.
+     */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'customer_id');
+    }
+
+    /**
      * Get the audit logs created by this user.
      */
     public function auditLogs(): HasMany

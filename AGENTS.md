@@ -150,32 +150,53 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Workstream 7: Admin & Superadmin Dashboard (`/admin`) Selesai & Verifikasi Browser Lulus**:
-  - Centralized Executive Layout: [layouts/admin.blade.php](file:///d:/laragon/www/TitipSini/resources/views/layouts/admin.blade.php) dengan navigasi sidebar lengkap (Dashboard, Verifikasi KYC, Moderasi Listing, Rekonsiliasi Finansial, dan Jejak Audit), quick link ke portal mitra dan web publik, profil admin, dan role badge.
-  - Executive Dashboard: [AdminDashboardController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminDashboardController.php) & [dashboard.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/dashboard.blade.php) (GMV, platform commission 20%, vendor payout 80%, antrian KYC, antrian moderasi listing, dan ringkasan audit log).
-  - Manajemen & Verifikasi KYC Mitra Vendor: [AdminVendorKycController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminVendorKycController.php), [vendors/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/vendors/index.blade.php), dan [vendors/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/vendors/show.blade.php) (Review berkas identitas & SKCK sesuai tata kelola privasi ADR-002, tombol Approve dan Reject dengan alasan tertulis).
-  - Moderasi Listing Tempat Penitipan: [AdminListingModerationController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminListingModerationController.php), [listings/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/index.blade.php), dan [listings/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/listings/show.blade.php) (Approve & publish listing ke katalog publik atau tolak/nonaktifkan).
-  - Rekonsiliasi Finansial & Monitoring Payout: [AdminFinanceController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminFinanceController.php) dan [finance/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/finance/index.blade.php) (Buku besar komisi platform 20% vs porsi vendor 80%, mutasi invoice Xendit, dan tombol Retry Payout untuk pencairan manual).
-  - Viewer Jejak Audit Sistem: [AdminAuditLogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminAuditLogController.php) dan [audit-logs/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/audit-logs/index.blade.php) (Filter aksi, pencarian IP/user, dan JSON payload viewer).
-  - Pembaruan 6 Layanan Resmi TitipSini: Menyelaraskan seluruh kategori dan layanan utama platform sesuai arahan: 1. Penitipan Traveling, 2. Pindahan Kost/Kontrakan, 3. Penitipan Kendaraan, 4. Penitipan Barang Kos, 5. Jasa Security Rumah (Bangunan), dan 6. Jasa Angkut Barang Anak KKN pada `DatabaseSeeder`, navigasi footer `layouts/app.blade.php`, dan katalog etalase `pages/home.blade.php`.
-  - Inspeksi Browser Agent: Verifikasi interaktif seluruh modul UI dan role selesai dengan 0 error JS, serta penambahan rute redirect alias `/catalog`, `/bookings`, `/vendor/dashboard`, dan `/admin/dashboard`.
-  - Automated Tests: **51 tests, 187 assertions, 100% PASSED** ([VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [AdminDashboardTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/AdminDashboardTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php)).
-  - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
+- **Task 1: Struktur Wilayah Operasional & Data Boundary (Policies 2.1, 3.1, 13.2, 13.3) Selesai**:
+  - **Skema & Model Wilayah Operasional**: Membuat tabel `operational_regions` dan kolom `operational_region_id` pada tabel `listings`. Model `OperationalRegion` mendukung penugasan 1 Admin per wilayah (`admin_id` unique/nullable), pengawasan Superadmin (`is_under_supervision`), serta validasi cakupan kota (`coversCity()`).
+  - **Data Boundary & Scoping Regional**:
+    - `Listing::forAdminRegion($user)`: Mengisolasi antrian moderasi listing dan counter status sehingga Admin wilayah A tidak dapat melihat listing wilayah B. Admin tanpa wilayah penugasan menerima query kosong (`whereRaw('1 = 0')`).
+    - `VendorProfile::forAdminRegion($user)`: Mengisolasi antrian review KYC vendor sesuai wilayah operasional yang ditugaskan.
+    - `Booking::forAdminRegion($user)`: Mengisolasi riwayat transaksi pesanan dan perhitungan GMV/pendapatan platform per wilayah.
+  - **Strict Authorization & Negative Access Control (HTTP 403)**:
+    - `AdminListingModerationController`: Memblokir aksi `show`, `publish`, dan `reject` bila Admin operasional mencoba mengakses listing di luar wilayahnya (`abort(403)`).
+    - `AdminVendorKycController`: Memblokir akses berkas KYC vendor di luar wilayah operasional Admin (`abort(403)`).
+    - Policy 13.2 & 13.3 Enforcement: Rute `/admin/audit-logs` dan `/admin/finance` kini dibatasi eksklusif untuk `role:superadmin`. Admin operasional ditolak dengan HTTP 403 Forbidden.
+  - **Antarmuka & Executive Dashboard**:
+    - Menampilkan banner cakupan wilayah (misal `Wilayah Khusus Ibukota Jakarta & Sekitarnya (REG-JKT)` untuk Admin, dan `Cakupan Nasional` untuk Superadmin).
+    - Menyembunyikan menu Rekonsiliasi Finansial dan Jejak Audit Sistem pada sidebar dan dashboard Admin biasa.
+  - **Verifikasi Ganda (PHP Tests & Browser Interface)**:
+    - Automated Feature Tests: **60 tests, 217 assertions, 100% PASSED** (termasuk 9 skenario isolasi wilayah di `OperationalRegionTest.php`).
+    - Interaktif Antarmuka Browser: Terverifikasi via skenario crawling otentikasi browser live bahwa isolasi data, penyembunyian menu, dan pembatasan 403 Forbidden berfungsi 100%.
+    - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Penyempurnaan & Ekspansi Masa Depan (Opsional / Pasca-MVP)**:
-  - Kanal notifikasi tambahan (misal integrasi WhatsApp API resmi bila PO memutuskan untuk mengaktifkannya).
-  - Multi-bahasa (ID / EN) untuk turis mancanegara.
-  - Setup live credential Xendit xenPlatform di production environment.
+- **Task 2**: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) - Implementasi retensi SKCK maksimal 7 hari pasca-verifikasi, mekanisme Privacy Request pengaburan NIK & SKCK dari database operasional, enkripsi path, dan audit log pembersihan dokumen.
+- **Task 3**: Siklus Booking Granular & Privasi Kontak (Policies 8 & 13.1) - Implementasi status 11 tahap (Submitted, Admin Reviewed, Confirmed, Check-in, Completed, dll) dan pemaskingan nomor WhatsApp/kontak sebelum booking status Confirmed.
+- **Task 4**: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2) - Implementasi batas 3x percobaan QRIS Xendit, invoice expired 15 menit, dan otorisasi tombol Reopen oleh Admin bila invoice kedaluwarsa.
+- **Task 5**: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11) - Implementasi modul pelaporan masalah barang rusak/hilang, penahanan pencairan dana vendor (escrow hold), pembekuan akun mitra, dan eskalasi Superadmin.
 
 ### 3. Architectural Decisions
-- **Core Multi-Service Taxonomy**: Platform TitipSini mendefinisikan 6 kluster layanan terintegrasi (Traveling, Pindahan Kost/Kontrakan, Penitipan Kendaraan, Penitipan Barang Kos, Jasa Security Rumah/Bangunan, dan Angkut Barang KKN) yang mencakup kebutuhan mahasiswa, perantau, wisatawan, dan pemilik properti.
-- **Centralized Executive Governance (ADR-002)**: Administrator dan Superadministrator memegang kendali penuh atas moderasi katalog, persetujuan KYC vendor (termasuk verifikasi dokumen SKCK berisiko tinggi), rekonsiliasi finansial (menggantikan peran finance yang dieliminasi), dan pengawasan jejak audit.
-- **Defense-in-Depth & Non-Repudiation**: Setiap tindakan administratif penting (Approve/Reject KYC, Publish Listing, Retry Payout) otomatis menghasilkan entri immutable di `audit_logs` bersama identitas admin dan alamat IP.
-- **Zero Upfront Booking & Split Settlement Model**: Platform beroperasi dengan model tanpa DP di depan, penagihan close-out saat barang diambil, verifikasi ketat sebelum serah-terima fisik, dan otomasi split payout 80% ke vendor.
+- **Single Active Admin per Operational Region**: Menjaga akuntabilitas satu pintu di setiap wilayah operasional. Ketika suatu wilayah belum memiliki admin tetap, Superadmin mengambil alih secara transparan melalui flag `is_under_supervision`.
+- **Zero Data Leakage Boundary**: Query builder menggunakan scope `forAdminRegion()` di level model utama (`Listing`, `VendorProfile`, `Booking`), memastikan tidak ada celah kebocoran data antar wilayah pada pencarian maupun dashboard summary.
+- **Exclusive Supervisory Isolation (Policy 13.2 & 13.3)**: Log audit dan rekonsiliasi finansial global secara tegas dipisahkan dari hak akses admin operasional regional dan dilindungi langsung oleh middleware `role:superadmin`.
 
 ### 4. Active Diffs
+- `app/Models/OperationalRegion.php`
+- `app/Models/User.php`
+- `app/Models/Listing.php`
+- `app/Models/VendorProfile.php`
+- `app/Models/Booking.php`
+- `app/Http/Controllers/Admin/AdminDashboardController.php`
+- `app/Http/Controllers/Admin/AdminListingModerationController.php`
+- `app/Http/Controllers/Admin/AdminVendorKycController.php`
 - `routes/web.php`
+- `resources/views/layouts/admin.blade.php`
+- `resources/views/pages/admin/dashboard.blade.php`
+- `resources/views/pages/admin/listings/index.blade.php`
+- `resources/views/pages/admin/vendors/index.blade.php`
+- `database/seeders/DatabaseSeeder.php`
+- `database/migrations/2026_10_28_121452_create_operational_regions_table.php`
+- `tests/Feature/OperationalRegionTest.php`
+- `tests/Feature/AdminDashboardTest.php`
 - `AGENTS.md`
 
 

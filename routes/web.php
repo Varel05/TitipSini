@@ -110,12 +110,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,superadm
     Route::post('/listings/{listing}/publish', [AdminListingModerationController::class, 'publish'])->name('listings.publish');
     Route::post('/listings/{listing}/reject', [AdminListingModerationController::class, 'reject'])->name('listings.reject');
 
-    // Financial Reconciliation (Replaces eliminated finance role)
-    Route::get('/finance', [AdminFinanceController::class, 'index'])->name('finance.index');
-    Route::post('/finance/settlements/{settlement}/retry', [AdminFinanceController::class, 'retryPayout'])->name('finance.retry_payout');
-
-    // System Audit Trail
-    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit_logs.index');
+    // Superadmin Exclusive Routes (Financial Reconciliation & Audit Trail per Policies 13.2 & 13.3)
+    Route::middleware(['role:superadmin'])->group(function () {
+        Route::get('/finance', [AdminFinanceController::class, 'index'])->name('finance.index');
+        Route::post('/finance/settlements/{settlement}/retry', [AdminFinanceController::class, 'retryPayout'])->name('finance.retry_payout');
+        Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit_logs.index');
+    });
 });
 
 /*

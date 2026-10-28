@@ -54,17 +54,19 @@
                     Moderasi Listing
                 </a>
 
-                <a href="{{ route('admin.finance.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.finance.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <i class="bi bi-cash-stack text-base"></i>
-                    Rekonsiliasi Finansial
-                </a>
+                @if(auth()->user()->isSuperadmin())
+                    <a href="{{ route('admin.finance.index') }}"
+                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.finance.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                        <i class="bi bi-cash-stack text-base"></i>
+                        Rekonsiliasi Finansial
+                    </a>
 
-                <a href="{{ route('admin.audit_logs.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.audit_logs.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <i class="bi bi-journal-text text-base"></i>
-                    Jejak Audit Sistem
-                </a>
+                    <a href="{{ route('admin.audit_logs.index') }}"
+                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.audit_logs.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                        <i class="bi bi-journal-text text-base"></i>
+                        Jejak Audit Sistem
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -81,6 +83,15 @@
                 <div class="truncate mr-2">
                     <span class="block text-xs font-bold text-white truncate">{{ auth()->user()->name ?? 'Administrator' }}</span>
                     <span class="block text-[10px] text-purple-400 font-mono uppercase">{{ auth()->user()->role->label() ?? 'Admin' }}</span>
+                    @if(auth()->user()->assignedRegion)
+                        <span class="inline-block text-[9px] text-amber-300 font-medium truncate mt-0.5" title="{{ auth()->user()->assignedRegion->name }}">
+                            <i class="bi bi-geo-alt"></i> {{ auth()->user()->assignedRegion->code }}
+                        </span>
+                    @elseif(!auth()->user()->isSuperadmin())
+                        <span class="inline-block text-[9px] text-rose-400 font-medium mt-0.5">
+                            <i class="bi bi-exclamation-triangle"></i> Belum ada wilayah
+                        </span>
+                    @endif
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf

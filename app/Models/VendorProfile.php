@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\VendorVerificationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -91,5 +92,46 @@ class VendorProfile extends Model
     public function canAcceptBookings(): bool
     {
         return $this->isVerified() && $this->is_open;
+    }
+
+    /**
+     * Scope query to only include vendors within the admin's assigned operational region.
+     * Superadmin has unrestricted nationwide access.
+     */
+    public function scopeForAdminRegion(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->isSuperadmin()) {
+            return $query;
+        }
+
+        $region = $user->assignedRegion;
+        if (! $region) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(function ($q) use ($region) {
+            if (! empty($region->cities)) {
+                $q->whereIn('city', $region->cities);
+            }
+            $q->orWhereHas('listings', function ($lq) use ($region) {
+                $lq->where('operational_region_id', $region->id);
+            });
+        });
+    }
+
+    /**
+     * Check if vendor is covered by a specific operational region.
+     */
+    public function isInRegion(OperationalRegion $region): bool
+    {
+        if (! empty($region->cities) && in_array($this->city, $region->cities, true)) {
+            return true;
+        }
+
+        return $this->listings()->where('operational_region_id', $region->id)->exists();
     }
 }

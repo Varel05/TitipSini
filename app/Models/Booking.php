@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BookingStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -161,5 +162,32 @@ class Booking extends Model
     public function isCompleted(): bool
     {
         return $this->status === BookingStatus::Completed;
+    }
+
+    /**
+     * Scope query to only include bookings within the admin's assigned operational region.
+     * Superadmin has unrestricted nationwide access.
+     */
+    public function scopeForAdminRegion(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->isSuperadmin()) {
+            return $query;
+        }
+
+        $region = $user->assignedRegion;
+        if (! $region) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('listing', function ($lq) use ($region) {
+            $lq->where('operational_region_id', $region->id);
+            if (! empty($region->cities)) {
+                $lq->orWhereIn('city', $region->cities);
+            }
+        });
     }
 }

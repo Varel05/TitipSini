@@ -23,31 +23,51 @@ class AdminDashboardController extends Controller
      */
     public function index(): View
     {
-        // Platform user counts
-        $totalCustomers = User::where('role', UserRole::Customer)->count();
-        $totalVendors = VendorProfile::count();
+        $user = auth()->user();
+        $isSuperadmin = $user->isSuperadmin();
+        $assignedRegion = $user->assignedRegion;
 
-        // Operational Queues
-        $pendingKycCount = VendorProfile::where('verification_status', VendorVerificationStatus::Pending)->count();
-        $pendingListingCount = Listing::where('status', ListingStatus::Submitted)->count();
-        $activeBookingsCount = Booking::whereIn('status', [
+        // Platform customer count (Superadmin sees all, Admin sees customers with bookings in their region)
+        $totalCustomers = $isSuperadmin
+            ? User::where('role', UserRole::Customer)->count()
+            : User::where('role', UserRole::Customer)
+                ->whereHas('bookings', fn ($b) => $b->forAdminRegion($user))
+                ->count();
+
+        // Vendor profiles scoped by operational region
+        $vendorQuery = VendorProfile::query()->forAdminRegion($user);
+        $totalVendors = (clone $vendorQuery)->count();
+
+        // Operational Queues scoped by region
+        $pendingKycCount = (clone $vendorQuery)->where('verification_status', VendorVerificationStatus::Pending)->count();
+        $pendingListingCount = Listing::query()->forAdminRegion($user)->where('status', ListingStatus::Submitted)->count();
+        $activeBookingsCount = Booking::query()->forAdminRegion($user)->whereIn('status', [
             BookingStatus::Confirmed,
             BookingStatus::CheckedIn,
             BookingStatus::RetrievalRequested,
         ])->count();
-        $completedBookingsCount = Booking::where('status', BookingStatus::Completed)->count();
+        $completedBookingsCount = Booking::query()->forAdminRegion($user)->where('status', BookingStatus::Completed)->count();
 
-        // Financial Totals (ADR-002)
-        $totalGmv = (float) Booking::where('status', BookingStatus::Completed)->sum('total_amount');
-        $totalPlatformRevenue = (float) Booking::where('status', BookingStatus::Completed)->sum('platform_fee');
-        $totalVendorDisbursed = (float) VendorSettlement::where('status', SettlementStatus::Settled)->sum('amount');
-        $pendingVendorPayout = (float) VendorSettlement::where('status', SettlementStatus::Pending)->sum('amount');
+        // Financial Totals scoped by region (ADR-002)
+        $completedBookings = Booking::query()->forAdminRegion($user)->where('status', BookingStatus::Completed);
+        $totalGmv = (float) (clone $completedBookings)->sum('total_amount');
+        $totalPlatformRevenue = (float) (clone $completedBookings)->sum('platform_fee');
 
-        // Recent Audit Activity
-        $recentAuditLogs = AuditLog::with('user')->latest()->take(6)->get();
+        $totalVendorDisbursed = (float) VendorSettlement::whereHas('booking', fn ($b) => $b->forAdminRegion($user))
+            ->where('status', SettlementStatus::Settled)
+            ->sum('amount');
+        $pendingVendorPayout = (float) VendorSettlement::whereHas('booking', fn ($b) => $b->forAdminRegion($user))
+            ->where('status', SettlementStatus::Pending)
+            ->sum('amount');
 
-        // Urgent KYC review queue
-        $urgentKycVendors = VendorProfile::where('verification_status', VendorVerificationStatus::Pending)
+        // Audit Trail (Policy 13.2: Exclusively accessible to Superadmin)
+        $recentAuditLogs = $isSuperadmin
+            ? AuditLog::with('user')->latest()->take(6)->get()
+            : collect();
+
+        // Urgent KYC review queue for current region
+        $urgentKycVendors = (clone $vendorQuery)
+            ->where('verification_status', VendorVerificationStatus::Pending)
             ->with('user')
             ->latest()
             ->take(5)
@@ -66,6 +86,8 @@ class AdminDashboardController extends Controller
             'pendingVendorPayout' => $pendingVendorPayout,
             'recentAuditLogs' => $recentAuditLogs,
             'urgentKycVendors' => $urgentKycVendors,
+            'assignedRegion' => $assignedRegion,
+            'isSuperadmin' => $isSuperadmin,
         ]);
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'vendor_profile_id',
     'category_id',
+    'operational_region_id',
     'title',
     'slug',
     'tagline',
@@ -81,6 +82,14 @@ class Listing extends Model
     }
 
     /**
+     * Get the operational region that governs this listing.
+     */
+    public function operationalRegion(): BelongsTo
+    {
+        return $this->belongsTo(OperationalRegion::class, 'operational_region_id');
+    }
+
+    /**
      * Get the facilities associated with the listing.
      */
     public function facilities(): BelongsToMany
@@ -110,6 +119,33 @@ class Listing extends Model
     public function storageSlots(): HasMany
     {
         return $this->slots();
+    }
+
+    /**
+     * Scope query to only include listings within the admin's assigned operational region.
+     * Superadmin has unrestricted nationwide access.
+     */
+    public function scopeForAdminRegion(Builder $query, ?User $user): Builder
+    {
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->isSuperadmin()) {
+            return $query;
+        }
+
+        $region = $user->assignedRegion;
+        if (! $region) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(function ($q) use ($region) {
+            $q->where('operational_region_id', $region->id);
+            if (! empty($region->cities)) {
+                $q->orWhereIn('city', $region->cities);
+            }
+        });
     }
 
     /**

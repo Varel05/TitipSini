@@ -6,6 +6,31 @@
 @section('content')
 <div class="space-y-6 max-w-7xl">
 
+    <!-- Regional Scope Banner -->
+    <div class="bg-slate-900 rounded-2xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-purple-600/30 text-purple-400 flex items-center justify-center text-sm font-bold">
+                <i class="bi bi-geo-alt"></i>
+            </span>
+            <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Cakupan Wilayah Moderasi</span>
+                @if(auth()->user()->isSuperadmin())
+                    <span class="font-bold text-white">Nasional (Seluruh Wilayah Operasional Indonesia)</span>
+                @elseif($assignedRegion)
+                    <span class="font-bold text-amber-300">{{ $assignedRegion->name }} ({{ $assignedRegion->code }})</span>
+                @else
+                    <span class="font-bold text-rose-400">Tidak ada wilayah yang ditugaskan ke akun Anda</span>
+                @endif
+            </div>
+        </div>
+
+        @if(!auth()->user()->isSuperadmin() && $assignedRegion)
+            <div class="text-[11px] text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/60">
+                Kota Cakupan: <span class="text-white font-medium">{{ implode(', ', $assignedRegion->cities ?? []) }}</span>
+            </div>
+        @endif
+    </div>
+
     <!-- Filters & Search -->
     <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 space-y-4">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
