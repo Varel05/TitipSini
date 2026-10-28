@@ -312,10 +312,23 @@
                                         </button>
                                     </form>
 
-                                    <a href="{{ route('faq') }}" class="px-4 py-3 rounded-xl bg-white border border-sky-300 text-sky-800 font-bold text-xs hover:bg-sky-100 transition">
-                                        <i class="bi bi-question-circle"></i> Butuh Bantuan / Komplain
+                                    <a href="{{ route('booking.dispute.create', $booking->booking_code) }}" class="px-4 py-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 font-bold text-xs hover:bg-rose-100 transition flex items-center gap-1.5">
+                                        <i class="bi bi-shield-exclamation text-rose-600"></i> Ada Masalah? Ajukan Sengketa
                                     </a>
                                 </div>
+                            </div>
+                        @endif
+
+                        <!-- Action: When Disputed (Policy 11) -->
+                        @if($booking->status->value === 'disputed')
+                            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2">
+                                <div class="flex items-center gap-2 font-bold text-sm text-amber-950">
+                                    <i class="bi bi-shield-exclamation text-amber-600 text-base"></i>
+                                    Pesanan Sedang Ditinjau Tim Sengketa & Mediasi
+                                </div>
+                                <p class="leading-relaxed">
+                                    Laporan sengketa Anda telah terdaftar. Sesuai Policy 11.1, dana pencairan mitra ditahan sementara (Escrow Hold) hingga proses investigasi dan penengahan selesai.
+                                </p>
                             </div>
                         @endif
 

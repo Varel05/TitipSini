@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminDisputeController;
 use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminListingModerationController;
 use App\Http\Controllers\Admin\AdminSkckAccessController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Admin\AdminVendorKycController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CustomerDisputeController;
 use App\Http\Controllers\Vendor\VendorBookingController;
 use App\Http\Controllers\Vendor\VendorDashboardController;
 use App\Http\Controllers\Vendor\VendorListingController;
@@ -47,6 +49,10 @@ Route::post('/pesanan/{booking:booking_code}/simulasi-check-in', [BookingControl
 Route::post('/pesanan/{booking:booking_code}/simulasi-bayar', [BookingController::class, 'simulatePaymentSuccess'])->name('booking.simulate_pay');
 Route::post('/pesanan/{booking:booking_code}/batal', [BookingController::class, 'cancel'])->name('booking.cancel');
 Route::post('/pesanan/{booking:booking_code}/konfirmasi-terima', [BookingController::class, 'confirmReturn'])->name('booking.confirm_return');
+
+// Customer Dispute & Complaint Reporting (Policy 11.1)
+Route::get('/pesanan/{booking:booking_code}/komplain', [CustomerDisputeController::class, 'create'])->name('booking.dispute.create');
+Route::post('/pesanan/{booking:booking_code}/komplain', [CustomerDisputeController::class, 'store'])->name('booking.dispute.store');
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +130,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,superadm
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking:booking_code}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{booking:booking_code}/reopen-payment', [AdminBookingController::class, 'reopenPayment'])->name('bookings.reopen_payment');
+
+    // Dispute Management & Escalation (Policy 11)
+    Route::get('/disputes', [AdminDisputeController::class, 'index'])->name('disputes.index');
+    Route::get('/disputes/{dispute}', [AdminDisputeController::class, 'show'])->name('disputes.show');
+    Route::post('/disputes/{dispute}/resolve', [AdminDisputeController::class, 'resolve'])->name('disputes.resolve');
+    Route::post('/disputes/{dispute}/reject', [AdminDisputeController::class, 'reject'])->name('disputes.reject');
+    Route::post('/disputes/{dispute}/escalate', [AdminDisputeController::class, 'escalate'])->name('disputes.escalate');
+    Route::post('/disputes/{dispute}/arbitrate', [AdminDisputeController::class, 'arbitrate'])->name('disputes.arbitrate');
 
     // Superadmin Exclusive Routes (Financial Reconciliation, Audit Trail, SKCK Approvals per Policies 6.3, 13.2, 13.3)
     Route::middleware(['role:superadmin'])->group(function () {

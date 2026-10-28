@@ -156,6 +156,22 @@ class Booking extends Model
     }
 
     /**
+     * Get the disputes filed for this booking (Policy 11).
+     */
+    public function disputes(): HasMany
+    {
+        return $this->hasMany(Dispute::class);
+    }
+
+    /**
+     * Get the latest dispute filed for this booking.
+     */
+    public function latestDispute(): HasOne
+    {
+        return $this->hasOne(Dispute::class)->latestOfMany();
+    }
+
+    /**
      * Get the vendor settlement record for this booking.
      */
     public function vendorSettlement(): HasOne

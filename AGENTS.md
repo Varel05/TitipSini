@@ -153,48 +153,52 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - **Task 1: Struktur Wilayah Operasional & Data Boundary (Policies 2.1, 3.1, 13.2, 13.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 9056815`).
 - **Task 2: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: db79954`).
 - **Task 3: Siklus Booking Granular & Privasi Kontak (Policies 8, 13.1, & 15.1) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 6a31ee2`).
-- **Task 4: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2) Selesai**:
-  - **Skema & Model Siklus QRIS**:
-    - Migration `add_qris_attempt_and_cycle_controls` menambahkan `cycle_number` dan `expires_at` (15 menit) pada `payment_attempts`, serta `current_payment_cycle`, `payment_cycle_reopened_at`, `payment_reopen_reason`, dan `payment_reopened_by` pada `bookings`.
-    - Atribut default model `Booking::$attributes = ['current_payment_cycle' => 1]`.
-  - **Aturan Batas 3x Percobaan & Lockout (Policy 10.2 Poin 1 & 2)**:
-    - `XenditPaymentGateway::createCloseoutInvoice` membatasi maksimal 3 percobaan QRIS per siklus aktif.
-    - Setiap invoice QRIS memiliki waktu kedaluwarsa 15 menit (`expires_at`). Invoice yang kedaluwarsa otomatis diperbarui ke status `PaymentStatus::Expired`.
-    - Jika 3 percobaan telah habis dan berstatus failed/expired, sistem memblokir pembuatan invoice baru (`isPaymentAttemptLimitExceeded()`), mengunci tombol checkout pelanggan, dan menampilkan pemberitahuan kuota habis.
-  - **Otorisasi Reopen Admin & Cooldown 30 Menit (Policy 10.2 Poin 3, 4, 5, 6)**:
-    - Admin wilayah yang berwenang (atau Superadmin) dapat membuka kembali proses pembayaran setelah masa tunggu cooldown 30 menit pasca-percobaan terakhir kedaluwarsa (`canAdminReopenPayment()`).
-    - Pembukaan kembali menaikkan `current_payment_cycle`, mereset kuota ke 3 kesempatan QRIS baru, dan mewajibkan pengisian alasan pembukaan (`reason`).
-    - Setiap tindakan reopen dicatat secara immutable di `audit_logs` (`admin_reopened_payment_cycle`).
-    - Menegakkan prinsip integritas: Admin dilarang menandai pembayaran lunas secara manual; status lunas hanya diubah via webhook resmi Xendit.
-  - **Antarmuka & Modul Manajemen Booking Admin**:
-    - Rute admin baru: `admin.bookings.index`, `admin.bookings.show`, dan `admin.bookings.reopen_payment`.
-    - Lembar kerja admin menampilkan telemetri siklus QRIS, riwayat invoice tiap siklus, timer cooldown, dan modal/form pembukaan kembali.
-    - Halaman checkout simulasi pelanggan menampilkan nomor siklus, nomor percobaan (1/3), dan peringatan saat kuota habis.
+- **Task 4: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 792faf8`).
+- **Task 5: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11) Selesai**:
+  - **Skema & Model Sengketa**:
+    - Migration `create_disputes_and_vendor_suspension_table` membuat tabel `disputes` dan menambahkan kolom `is_suspended`, `suspended_at`, `suspension_reason`, dan `suspended_by` pada `vendor_profiles`.
+    - Enums `DisputeCategory` (dengan klasifikasi sengketa biasa vs wajib eskalasi Superadmin) dan `DisputeStatus` (Open, Escalated, Resolved, Rejected).
+    - Menambahkan enum case `SettlementStatus::OnHold` (Ditahan Karena Sengketa / Escrow Hold).
+  - **Pelaporan Sengketa & Escrow Hold Otomatis (Policy 11.1 Poin 5)**:
+    - Pelanggan dapat mengajukan pengaduan sengketa melalui antarmuka tiket `/pesanan/{booking}/komplain`.
+    - Saat sengketa diajukan, status booking beralih ke `BookingStatus::Disputed` dan payout mitra otomatis dikunci pada status `SettlementStatus::OnHold`.
+    - Sengketa kategori kritis (`LostGoods`, `Fraud`, `PaymentManipulation`, `SafetyThreat`, `CriminalOffense`) langsung berstatus `Escalated` ke Superadmin.
+  - **Penyelesaian Wilayah & Pelepasan Dana (Policy 11.2 & 11.3)**:
+    - Admin Wilayah berwenang memediasi sengketa operasional biasa di wilayahnya (`DamagedItem`, `OperationalDelay`, `LocationIssue`).
+    - Admin dapat menyelesaikan sengketa dengan atau tanpa pemotongan kompensasi/denda (`vendor_penalty_amount`), melepaskan status escrow hold kembali ke `Pending` (nominal disesuaikan), dan menyelesaikan pesanan.
+    - Admin biasa dilarang memutus kasus eskalasi Superadmin (HTTP 403 Forbidden).
+  - **Arbitrase Superadmin & Pembekuan Akun Mitra (Policy 7.3 & 11.2)**:
+    - Superadmin memiliki modul arbitrase eksklusif untuk kasus kritis lintas daerah.
+    - Otoritas pembekuan akun mitra (`suspend_vendor`), mencatat alasan penangguhan, dan memblokir mitra secara menyeluruh dari menerima booking baru di platform (`canAcceptBookings() = false`).
   - **Verifikasi Ganda (PHP Tests & Browser Interface)**:
-    - Automated Feature Tests: **81 tests, 312 assertions, 100% PASSED** (termasuk 6 skenario lengkap di `QrisAttemptLimitTest.php`).
-    - Live Browser Interaction: Skenario end-to-end (percobaan 1 -> kedaluwarsa 3x -> pelanggan terblokir -> admin cek telemetri -> cooldown 30m -> admin reopen dengan alasan -> siklus #2 terbuka kembali) berhasil diverifikasi 100% PASS.
+    - Automated Feature Tests: **87 tests, 347 assertions, 100% PASSED** (termasuk 6 skenario komprehensif di `DisputeManagementTest.php`).
+    - Live Browser Interaction: Skenario end-to-end (tiket 48 jam -> ajukan komplain -> booking disputed -> payout escrow hold -> admin investigasi & resolusi denda -> superadmin arbitrase fraud & pembekuan akun mitra) diverifikasi 100% PASS.
     - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Task 5: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11)**: Implementasi modul pelaporan masalah barang rusak/hilang, penahanan pencairan dana vendor (escrow hold), pembekuan akun mitra, dan eskalasi Superadmin.
+- **Penyelarasan Kebijakan Operasional Menyeluruh (Policy 1-19) Selesai**: Seluruh task utama (Wilayah Operasional & Boundary, Tata Kelola SKCK & Privasi, Siklus Booking & Kontak, Pembatasan QRIS & Reopen, serta Modul Sengketa & Eskalasi) telah rampung dan terverifikasi ganda. Siap untuk pengujian regresi platform menyeluruh dan rilis.
 
 ### 3. Architectural Decisions
-- **Lifecycle Cycle Partitioning**: Menyimpan `cycle_number` pada setiap `payment_attempts` dan `current_payment_cycle` pada `bookings` memungkinkan sistem menjaga jejak audit yang bersih atas kegagalan transaksi berulang tanpa menghapus atau menimpa riwayat invoice sebelumnya.
-- **30-Minute Cooldown Cooling**: Jeda 30 menit sebelum Admin dapat melakukan reopen mencegah spamming pembuatan invoice berulang dan memberikan waktu bagi pelanggan/mitra memeriksa kendala jaringan perbankan.
+- **Escrow Payout Invariance (Policy 11.1)**: Mengunci `vendor_settlements` pada status `OnHold` saat sengketa diajukan melindungi dana konsumen dan integritas platform sebelum barang atau kerugian diselesaikan.
+- **Hierarchical Dispute Escalation**: Membedakan sengketa operasional harian (wewenang Admin Wilayah) dan sengketa kritis hukum/kehilangan (wewenang eksklusif Superadmin) menjamin penegakan tata kelola yang ketat tanpa menghambat kecepatan operasional wilayah.
 
 ### 4. Active Diffs
+- `app/Enums/DisputeCategory.php`
+- `app/Enums/DisputeStatus.php`
+- `app/Enums/SettlementStatus.php`
+- `app/Models/Dispute.php`
 - `app/Models/Booking.php`
-- `app/Models/PaymentAttempt.php`
-- `app/Services/Payment/XenditPaymentGateway.php`
-- `app/Http/Controllers/BookingController.php`
-- `app/Http/Controllers/Admin/AdminBookingController.php`
+- `app/Models/VendorProfile.php`
+- `app/Http/Controllers/CustomerDisputeController.php`
+- `app/Http/Controllers/Admin/AdminDisputeController.php`
 - `routes/web.php`
 - `resources/views/layouts/admin.blade.php`
-- `resources/views/pages/admin/bookings/index.blade.php`
-- `resources/views/pages/admin/bookings/show.blade.php`
-- `resources/views/pages/booking/checkout-simulation.blade.php`
-- `database/migrations/2026_10_28_131000_add_qris_attempt_and_cycle_controls.php`
-- `tests/Feature/QrisAttemptLimitTest.php`
+- `resources/views/pages/booking/show.blade.php`
+- `resources/views/pages/booking/dispute-create.blade.php`
+- `resources/views/pages/admin/disputes/index.blade.php`
+- `resources/views/pages/admin/disputes/show.blade.php`
+- `database/migrations/2026_10_28_133000_create_disputes_and_vendor_suspension_table.php`
+- `tests/Feature/DisputeManagementTest.php`
 - `AGENTS.md`
 
 

@@ -42,6 +42,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'bank_account_holder',
     'submerchant_id',
     'is_open',
+    'is_suspended',
+    'suspended_at',
+    'suspension_reason',
+    'suspended_by',
 ])]
 class VendorProfile extends Model
 {
@@ -64,6 +68,8 @@ class VendorProfile extends Model
             'skck_pruned_at' => 'datetime',
             'privacy_anonymized_at' => 'datetime',
             'is_open' => 'boolean',
+            'is_suspended' => 'boolean',
+            'suspended_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
         ];
@@ -158,11 +164,19 @@ class VendorProfile extends Model
     }
 
     /**
+     * Get the administrator who suspended the vendor profile.
+     */
+    public function suspendedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'suspended_by');
+    }
+
+    /**
      * Determine if the vendor is eligible to accept bookings.
      */
     public function canAcceptBookings(): bool
     {
-        return $this->isVerified() && $this->is_open && ! $this->isSkckBlocked();
+        return $this->isVerified() && $this->is_open && ! $this->isSkckBlocked() && ! $this->is_suspended;
     }
 
     /**
