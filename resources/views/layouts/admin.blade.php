@@ -66,6 +66,12 @@
                         <i class="bi bi-journal-text text-base"></i>
                         Jejak Audit Sistem
                     </a>
+
+                    <a href="{{ route('admin.skck_requests.index') }}"
+                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.skck_requests.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                        <i class="bi bi-shield-lock text-base"></i>
+                        Izin Akses SKCK
+                    </a>
                 @endif
             </div>
         </div>

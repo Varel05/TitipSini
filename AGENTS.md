@@ -150,53 +150,53 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Task 1: Struktur Wilayah Operasional & Data Boundary (Policies 2.1, 3.1, 13.2, 13.3) Selesai**:
-  - **Skema & Model Wilayah Operasional**: Membuat tabel `operational_regions` dan kolom `operational_region_id` pada tabel `listings`. Model `OperationalRegion` mendukung penugasan 1 Admin per wilayah (`admin_id` unique/nullable), pengawasan Superadmin (`is_under_supervision`), serta validasi cakupan kota (`coversCity()`).
-  - **Data Boundary & Scoping Regional**:
-    - `Listing::forAdminRegion($user)`: Mengisolasi antrian moderasi listing dan counter status sehingga Admin wilayah A tidak dapat melihat listing wilayah B. Admin tanpa wilayah penugasan menerima query kosong (`whereRaw('1 = 0')`).
-    - `VendorProfile::forAdminRegion($user)`: Mengisolasi antrian review KYC vendor sesuai wilayah operasional yang ditugaskan.
-    - `Booking::forAdminRegion($user)`: Mengisolasi riwayat transaksi pesanan dan perhitungan GMV/pendapatan platform per wilayah.
-  - **Strict Authorization & Negative Access Control (HTTP 403)**:
-    - `AdminListingModerationController`: Memblokir aksi `show`, `publish`, dan `reject` bila Admin operasional mencoba mengakses listing di luar wilayahnya (`abort(403)`).
-    - `AdminVendorKycController`: Memblokir akses berkas KYC vendor di luar wilayah operasional Admin (`abort(403)`).
-    - Policy 13.2 & 13.3 Enforcement: Rute `/admin/audit-logs` dan `/admin/finance` kini dibatasi eksklusif untuk `role:superadmin`. Admin operasional ditolak dengan HTTP 403 Forbidden.
-  - **Antarmuka & Executive Dashboard**:
-    - Menampilkan banner cakupan wilayah (misal `Wilayah Khusus Ibukota Jakarta & Sekitarnya (REG-JKT)` untuk Admin, dan `Cakupan Nasional` untuk Superadmin).
-    - Menyembunyikan menu Rekonsiliasi Finansial dan Jejak Audit Sistem pada sidebar dan dashboard Admin biasa.
+- **Task 1: Struktur Wilayah Operasional & Data Boundary (Policies 2.1, 3.1, 13.2, 13.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 9056815`).
+- **Task 2: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) Selesai**:
+  - **Skema & Model Akses SKCK**: Membuat migration kolom-kolom SKCK (`skck_path`, `skck_issued_at`, `skck_expires_at`, `skck_grace_period_ends_at`, `skck_verified_at`, `skck_status`, `skck_pruned_at`, `revision_notes`, `privacy_anonymized_at`) pada `vendor_profiles` dan tabel `skck_access_requests`.
+  - **Status Verifikasi Vendor & Revisi (Policy 6.1)**:
+    - Menambahkan enum case `VendorVerificationStatus::NeedsRevision`.
+    - Menambahkan aksi `requestRevision` pada `AdminVendorKycController` untuk mengembalikan pendaftaran vendor dengan catatan perbaikan yang jelas.
+  - **Kebijakan Masa Berlaku & 30-Day Grace Period (Policy 6.2)**:
+    - Vendor tetap diizinkan menerima booking selama 30 hari masa tenggang pasca-SKCK kedaluwarsa (`isInSkckGracePeriod()`).
+    - Bila masa tenggang 30 hari terlampaui tanpa perpanjangan terverifikasi, sistem memblokir vendor dari menerima booking baru (`isSkckBlocked()`, `canAcceptBookings() = false`).
+    - Artisan Command `php artisan titipsini:check-skck-expiry` untuk mengaudit masa berlaku, memperbarui status otomatis, dan memblokir booking secara terjadwal.
+  - **Akses Dokumen Berbatas Waktu & Privasi (Policy 6.3)**:
+    - Admin biasa dilarang membuka atau mengunduh berkas fisik SKCK mentah (HTTP 403 Forbidden).
+    - Mekanisme pengajuan izin akses ke Superadmin (`POST /admin/vendors/{vendor}/skck-request`) dengan pencatatan alasan wajib.
+    - Superadmin mengotorisasi akses berbatas waktu (2 jam) melalui modul `AdminSkckAccessController` (`/admin/skck-requests`).
+    - Setiap unduhan atau akses dokumen dicatat immutable di `audit_logs`.
+    - Auto-prune retensi SKCK: dokumen fisik dibersihkan otomatis dari storage 7 hari setelah verifikasi selesai (`skck_pruned_at`).
+    - Fitur Privacy Request: mekanisme pembersihan berkas KTP dan SKCK atas permintaan mitra vendor (`privacyAnonymize`).
+    - Masking NIK: nomor identitas KTP dimasking di seluruh antarmuka admin (`3171********0001`).
   - **Verifikasi Ganda (PHP Tests & Browser Interface)**:
-    - Automated Feature Tests: **60 tests, 217 assertions, 100% PASSED** (termasuk 9 skenario isolasi wilayah di `OperationalRegionTest.php`).
-    - Interaktif Antarmuka Browser: Terverifikasi via skenario crawling otentikasi browser live bahwa isolasi data, penyembunyian menu, dan pembatasan 403 Forbidden berfungsi 100%.
+    - Automated Feature Tests: **68 tests, 245 assertions, 100% PASSED** (termasuk 8 skenario pengujian di `SkckGovernanceTest.php`).
+    - Live Browser Crawler: Memvalidasi form request, approval Superadmin, negative 403 forbidden check, dan unblocking download pasca-approval.
     - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Task 2**: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) - Implementasi retensi SKCK maksimal 7 hari pasca-verifikasi, mekanisme Privacy Request pengaburan NIK & SKCK dari database operasional, enkripsi path, dan audit log pembersihan dokumen.
 - **Task 3**: Siklus Booking Granular & Privasi Kontak (Policies 8 & 13.1) - Implementasi status 11 tahap (Submitted, Admin Reviewed, Confirmed, Check-in, Completed, dll) dan pemaskingan nomor WhatsApp/kontak sebelum booking status Confirmed.
 - **Task 4**: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2) - Implementasi batas 3x percobaan QRIS Xendit, invoice expired 15 menit, dan otorisasi tombol Reopen oleh Admin bila invoice kedaluwarsa.
 - **Task 5**: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11) - Implementasi modul pelaporan masalah barang rusak/hilang, penahanan pencairan dana vendor (escrow hold), pembekuan akun mitra, dan eskalasi Superadmin.
 
 ### 3. Architectural Decisions
-- **Single Active Admin per Operational Region**: Menjaga akuntabilitas satu pintu di setiap wilayah operasional. Ketika suatu wilayah belum memiliki admin tetap, Superadmin mengambil alih secara transparan melalui flag `is_under_supervision`.
-- **Zero Data Leakage Boundary**: Query builder menggunakan scope `forAdminRegion()` di level model utama (`Listing`, `VendorProfile`, `Booking`), memastikan tidak ada celah kebocoran data antar wilayah pada pencarian maupun dashboard summary.
-- **Exclusive Supervisory Isolation (Policy 13.2 & 13.3)**: Log audit dan rekonsiliasi finansial global secara tegas dipisahkan dari hak akses admin operasional regional dan dilindungi langsung oleh middleware `role:superadmin`.
+- **Time-Bound Ephemeral Document Authorization**: Berkas hukum sensitif seperti SKCK tidak boleh bebas diunduh kapan saja oleh admin operasional. Menggunakan persetujuan Superadmin dengan jendela akses aktif 2 jam dan pencatatan audit trail menjamin perlindungan privasi mitra dan kepatuhan regulasi PDP (Pelindungan Data Pribadi).
+- **Grace Period Preservation (Zero Disruption Model)**: Masa tenggang 30 hari memungkinkan mitra yang memiliki reputasi baik tetap melayani pelanggan tanpa disrupsi operasional tiba-tiba, sambil memberikan waktu pembaruan dokumen kepolisian.
+- **7-Day Auto-Pruning Retention**: Dokumen fisik tidak disimpan selamanya di storage aktif. Setelah 7 hari verifikasi berhasil, berkas fisik dihapus untuk meminimalkan risiko kebocoran data (data minimisation principle).
 
 ### 4. Active Diffs
-- `app/Models/OperationalRegion.php`
-- `app/Models/User.php`
-- `app/Models/Listing.php`
+- `app/Enums/VendorVerificationStatus.php`
 - `app/Models/VendorProfile.php`
-- `app/Models/Booking.php`
-- `app/Http/Controllers/Admin/AdminDashboardController.php`
-- `app/Http/Controllers/Admin/AdminListingModerationController.php`
+- `app/Models/SkckAccessRequest.php`
+- `app/Console/Commands/CheckSkckExpiryCommand.php`
 - `app/Http/Controllers/Admin/AdminVendorKycController.php`
+- `app/Http/Controllers/Admin/AdminSkckAccessController.php`
 - `routes/web.php`
 - `resources/views/layouts/admin.blade.php`
-- `resources/views/pages/admin/dashboard.blade.php`
-- `resources/views/pages/admin/listings/index.blade.php`
-- `resources/views/pages/admin/vendors/index.blade.php`
-- `database/seeders/DatabaseSeeder.php`
-- `database/migrations/2026_10_28_121452_create_operational_regions_table.php`
-- `tests/Feature/OperationalRegionTest.php`
-- `tests/Feature/AdminDashboardTest.php`
+- `resources/views/pages/admin/vendors/show.blade.php`
+- `resources/views/pages/admin/skck-requests/index.blade.php`
+- `database/migrations/2026_10_28_123253_add_skck_and_privacy_to_vendor_profiles_table.php`
+- `database/migrations/2026_10_28_123254_create_skck_access_requests_table.php`
+- `tests/Feature/SkckGovernanceTest.php`
 - `AGENTS.md`
 
 

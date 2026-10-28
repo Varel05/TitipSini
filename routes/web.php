@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminListingModerationController;
+use App\Http\Controllers\Admin\AdminSkckAccessController;
 use App\Http\Controllers\Admin\AdminVendorKycController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
@@ -98,11 +99,15 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'role:vendor'])->g
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,superadmin'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Vendor KYC Management
+    // Vendor KYC Management (Policy 6.1 - 6.3)
     Route::get('/vendors', [AdminVendorKycController::class, 'index'])->name('vendors.index');
     Route::get('/vendors/{vendor}', [AdminVendorKycController::class, 'show'])->name('vendors.show');
     Route::post('/vendors/{vendor}/approve', [AdminVendorKycController::class, 'approve'])->name('vendors.approve');
     Route::post('/vendors/{vendor}/reject', [AdminVendorKycController::class, 'reject'])->name('vendors.reject');
+    Route::post('/vendors/{vendor}/request-revision', [AdminVendorKycController::class, 'requestRevision'])->name('vendors.request_revision');
+    Route::post('/vendors/{vendor}/skck-request', [AdminVendorKycController::class, 'requestSkckAccess'])->name('vendors.request_skck');
+    Route::get('/vendors/{vendor}/skck-document', [AdminVendorKycController::class, 'downloadSkckDocument'])->name('vendors.download_skck');
+    Route::post('/vendors/{vendor}/privacy-anonymize', [AdminVendorKycController::class, 'privacyAnonymize'])->name('vendors.privacy_anonymize');
 
     // Listing Moderation
     Route::get('/listings', [AdminListingModerationController::class, 'index'])->name('listings.index');
@@ -110,11 +115,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,superadm
     Route::post('/listings/{listing}/publish', [AdminListingModerationController::class, 'publish'])->name('listings.publish');
     Route::post('/listings/{listing}/reject', [AdminListingModerationController::class, 'reject'])->name('listings.reject');
 
-    // Superadmin Exclusive Routes (Financial Reconciliation & Audit Trail per Policies 13.2 & 13.3)
+    // Superadmin Exclusive Routes (Financial Reconciliation, Audit Trail, SKCK Approvals per Policies 6.3, 13.2, 13.3)
     Route::middleware(['role:superadmin'])->group(function () {
         Route::get('/finance', [AdminFinanceController::class, 'index'])->name('finance.index');
         Route::post('/finance/settlements/{settlement}/retry', [AdminFinanceController::class, 'retryPayout'])->name('finance.retry_payout');
         Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit_logs.index');
+        Route::get('/skck-requests', [AdminSkckAccessController::class, 'index'])->name('skck_requests.index');
+        Route::post('/skck-requests/{accessRequest}/approve', [AdminSkckAccessController::class, 'approve'])->name('skck_requests.approve');
+        Route::post('/skck-requests/{accessRequest}/reject', [AdminSkckAccessController::class, 'reject'])->name('skck_requests.reject');
     });
 });
 

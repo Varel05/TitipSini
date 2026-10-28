@@ -7,6 +7,7 @@ enum VendorVerificationStatus: string
     case Unverified = 'unverified';
     case Pending = 'pending';
     case Verified = 'verified';
+    case NeedsRevision = 'needs_revision';
     case Rejected = 'rejected';
 
     /**
@@ -18,6 +19,7 @@ enum VendorVerificationStatus: string
             self::Unverified => 'Belum Verifikasi',
             self::Pending => 'Menunggu Verifikasi',
             self::Verified => 'Terverifikasi',
+            self::NeedsRevision => 'Perlu Perbaikan',
             self::Rejected => 'Ditolak',
         };
     }
@@ -31,6 +33,7 @@ enum VendorVerificationStatus: string
             self::Unverified => 'bg-slate-100 text-slate-700 border-slate-200',
             self::Pending => 'bg-amber-50 text-amber-700 border-amber-200',
             self::Verified => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            self::NeedsRevision => 'bg-sky-50 text-sky-700 border-sky-200',
             self::Rejected => 'bg-rose-50 text-rose-700 border-rose-200',
         };
     }
