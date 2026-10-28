@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [CatalogController::class, 'index'])->name('home');
 Route::get('/katalog', [CatalogController::class, 'explore'])->name('catalog.index');
 Route::get('/katalog/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
+Route::redirect('/catalog', '/katalog');
+Route::redirect('/bookings', '/pesanan');
+Route::redirect('/vendor/dashboard', '/vendor');
+Route::redirect('/admin/dashboard', '/admin');
 
 /*
 |--------------------------------------------------------------------------

@@ -150,7 +150,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ## State Tracking & Handover
 
 ### 1. Current Status
-- **Workstream 7: Admin & Superadmin Dashboard (`/admin`) Selesai & Bugfix Terselesaikan**:
+- **Workstream 7: Admin & Superadmin Dashboard (`/admin`) Selesai & Verifikasi Browser Lulus**:
   - Centralized Executive Layout: [layouts/admin.blade.php](file:///d:/laragon/www/TitipSini/resources/views/layouts/admin.blade.php) dengan navigasi sidebar lengkap (Dashboard, Verifikasi KYC, Moderasi Listing, Rekonsiliasi Finansial, dan Jejak Audit), quick link ke portal mitra dan web publik, profil admin, dan role badge.
   - Executive Dashboard: [AdminDashboardController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminDashboardController.php) & [dashboard.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/dashboard.blade.php) (GMV, platform commission 20%, vendor payout 80%, antrian KYC, antrian moderasi listing, dan ringkasan audit log).
   - Manajemen & Verifikasi KYC Mitra Vendor: [AdminVendorKycController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminVendorKycController.php), [vendors/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/vendors/index.blade.php), dan [vendors/show.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/vendors/show.blade.php) (Review berkas identitas & SKCK sesuai tata kelola privasi ADR-002, tombol Approve dan Reject dengan alasan tertulis).
@@ -158,6 +158,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Rekonsiliasi Finansial & Monitoring Payout: [AdminFinanceController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminFinanceController.php) dan [finance/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/finance/index.blade.php) (Buku besar komisi platform 20% vs porsi vendor 80%, mutasi invoice Xendit, dan tombol Retry Payout untuk pencairan manual).
   - Viewer Jejak Audit Sistem: [AdminAuditLogController](file:///d:/laragon/www/TitipSini/app/Http/Controllers/Admin/AdminAuditLogController.php) dan [audit-logs/index.blade.php](file:///d:/laragon/www/TitipSini/resources/views/pages/admin/audit-logs/index.blade.php) (Filter aksi, pencarian IP/user, dan JSON payload viewer).
   - Pembaruan 6 Layanan Resmi TitipSini: Menyelaraskan seluruh kategori dan layanan utama platform sesuai arahan: 1. Penitipan Traveling, 2. Pindahan Kost/Kontrakan, 3. Penitipan Kendaraan, 4. Penitipan Barang Kos, 5. Jasa Security Rumah (Bangunan), dan 6. Jasa Angkut Barang Anak KKN pada `DatabaseSeeder`, navigasi footer `layouts/app.blade.php`, dan katalog etalase `pages/home.blade.php`.
+  - Inspeksi Browser Agent: Verifikasi interaktif seluruh modul UI dan role selesai dengan 0 error JS, serta penambahan rute redirect alias `/catalog`, `/bookings`, `/vendor/dashboard`, dan `/admin/dashboard`.
   - Automated Tests: **51 tests, 187 assertions, 100% PASSED** ([VendorPortalTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/VendorPortalTest.php), [UserRoleTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/UserRoleTest.php), [AdminDashboardTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/AdminDashboardTest.php), [XenditPaymentTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/XenditPaymentTest.php), [BookingTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/BookingTest.php), [CatalogTest.php](file:///d:/laragon/www/TitipSini/tests/Feature/CatalogTest.php)).
   - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
@@ -174,9 +175,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - **Zero Upfront Booking & Split Settlement Model**: Platform beroperasi dengan model tanpa DP di depan, penagihan close-out saat barang diambil, verifikasi ketat sebelum serah-terima fisik, dan otomasi split payout 80% ke vendor.
 
 ### 4. Active Diffs
-- `database/seeders/DatabaseSeeder.php`
-- `resources/views/layouts/app.blade.php`
-- `resources/views/pages/home.blade.php`
+- `routes/web.php`
 - `AGENTS.md`
 
 
