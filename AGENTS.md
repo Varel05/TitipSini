@@ -152,46 +152,49 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ### 1. Current Status
 - **Task 1: Struktur Wilayah Operasional & Data Boundary (Policies 2.1, 3.1, 13.2, 13.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 9056815`).
 - **Task 2: Tata Kelola SKCK & Privacy Request Dokumen Sensitif (Policies 6.1 - 6.3) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: db79954`).
-- **Task 3: Siklus Booking Granular & Privasi Kontak (Policies 8, 13.1, & 15.1) Selesai**:
-  - **Skema & Kolom Database**: Migration `add_lifecycle_and_confirmation_to_bookings_table` menambahkan `returned_at`, `auto_complete_at`, `customer_confirmed_at`, dan `rejection_reason` pada `bookings`.
-  - **Status Siklus Booking Terpadu (Policy 8.1)**:
-    - Menambahkan enum case `ReturnedByVendor` dan `Disputed` pada `BookingStatus`.
-    - Pesanan baru berstatus awal `BookingStatus::Created` (belum dikonfirmasi mitra, tanpa pembayaran upfront).
-    - Mitra memiliki modul persetujuan untuk menerima (`confirm`) atau menolak (`reject` disertai alasan wajib, kapasitas slot dipulihkan).
-  - **Privasi Kontak & Masking Nomor Telepon (Policy 13.1)**:
-    - Sebelum status `Confirmed`, nomor telepon kedua belah pihak disembunyikan/dimasking (`Nomor kontak disembunyikan`).
-    - Setelah mitra mengonfirmasi (`Confirmed`) sampai serah terima berlangsung (`CheckedIn`, `RetrievalRequested`, `ReturnedByVendor`), nomor kontak terbuka dua arah bagi mitra dan pelanggan untuk kebutuhan koordinasi kedatangan.
-    - Setelah pesanan berstatus `Completed` atau `Cancelled`, nomor kontak ditutup kembali demi kepatuhan privasi (PDP).
-  - **Jendela Konfirmasi 48 Jam & Penyerahan Fisik (Policy 8.2)**:
-    - Mitra menandai barang telah diserahkan kembali fisik (`ReturnedByVendor`).
-    - Membuka jendela 48 jam bagi pelanggan untuk memeriksa barang dan mengonfirmasi penerimaan (`confirmReturn`).
-    - Artisan Command `php artisan titipsini:check-return-confirmations` menyelesaikan pesanan otomatis bila tidak ada komplain dalam 48 jam (`auto_complete_at`), sekaligus membukukan `vendor_settlements`.
+- **Task 3: Siklus Booking Granular & Privasi Kontak (Policies 8, 13.1, & 15.1) Selesai**: Berhasil diuji dan di-push ke GitHub (`commit: 6a31ee2`).
+- **Task 4: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2) Selesai**:
+  - **Skema & Model Siklus QRIS**:
+    - Migration `add_qris_attempt_and_cycle_controls` menambahkan `cycle_number` dan `expires_at` (15 menit) pada `payment_attempts`, serta `current_payment_cycle`, `payment_cycle_reopened_at`, `payment_reopen_reason`, dan `payment_reopened_by` pada `bookings`.
+    - Atribut default model `Booking::$attributes = ['current_payment_cycle' => 1]`.
+  - **Aturan Batas 3x Percobaan & Lockout (Policy 10.2 Poin 1 & 2)**:
+    - `XenditPaymentGateway::createCloseoutInvoice` membatasi maksimal 3 percobaan QRIS per siklus aktif.
+    - Setiap invoice QRIS memiliki waktu kedaluwarsa 15 menit (`expires_at`). Invoice yang kedaluwarsa otomatis diperbarui ke status `PaymentStatus::Expired`.
+    - Jika 3 percobaan telah habis dan berstatus failed/expired, sistem memblokir pembuatan invoice baru (`isPaymentAttemptLimitExceeded()`), mengunci tombol checkout pelanggan, dan menampilkan pemberitahuan kuota habis.
+  - **Otorisasi Reopen Admin & Cooldown 30 Menit (Policy 10.2 Poin 3, 4, 5, 6)**:
+    - Admin wilayah yang berwenang (atau Superadmin) dapat membuka kembali proses pembayaran setelah masa tunggu cooldown 30 menit pasca-percobaan terakhir kedaluwarsa (`canAdminReopenPayment()`).
+    - Pembukaan kembali menaikkan `current_payment_cycle`, mereset kuota ke 3 kesempatan QRIS baru, dan mewajibkan pengisian alasan pembukaan (`reason`).
+    - Setiap tindakan reopen dicatat secara immutable di `audit_logs` (`admin_reopened_payment_cycle`).
+    - Menegakkan prinsip integritas: Admin dilarang menandai pembayaran lunas secara manual; status lunas hanya diubah via webhook resmi Xendit.
+  - **Antarmuka & Modul Manajemen Booking Admin**:
+    - Rute admin baru: `admin.bookings.index`, `admin.bookings.show`, dan `admin.bookings.reopen_payment`.
+    - Lembar kerja admin menampilkan telemetri siklus QRIS, riwayat invoice tiap siklus, timer cooldown, dan modal/form pembukaan kembali.
+    - Halaman checkout simulasi pelanggan menampilkan nomor siklus, nomor percobaan (1/3), dan peringatan saat kuota habis.
   - **Verifikasi Ganda (PHP Tests & Browser Interface)**:
-    - Automated Feature Tests: **75 tests, 279 assertions, 100% PASSED** (termasuk 7 skenario pengujian di `BookingLifecyclePrivacyTest.php`).
-    - Live Browser Interaction: Skenario end-to-end (masking -> terima pesanan -> kontak terbuka -> check-in -> bayar -> mitra tandai kembali -> jendela 48 jam -> konfirmasi pelanggan -> completed -> masking tertutup) berhasil diverifikasi 100% PASS.
+    - Automated Feature Tests: **81 tests, 312 assertions, 100% PASSED** (termasuk 6 skenario lengkap di `QrisAttemptLimitTest.php`).
+    - Live Browser Interaction: Skenario end-to-end (percobaan 1 -> kedaluwarsa 3x -> pelanggan terblokir -> admin cek telemetri -> cooldown 30m -> admin reopen dengan alasan -> siklus #2 terbuka kembali) berhasil diverifikasi 100% PASS.
     - Linter Pint lulus 100% (`vendor/bin/pint --dirty --format agent`).
 
 ### 2. Pending Tasks
-- **Task 4: Pembatasan Percobaan QRIS & Siklus Reopen Admin (Policy 10.2)**: Implementasi batas 3x percobaan QRIS Xendit, invoice expired 15 menit, dan otorisasi tombol Reopen oleh Admin bila invoice kedaluwarsa.
 - **Task 5: Modul Sengketa (Dispute Management) & Eskalasi Superadmin (Policy 11)**: Implementasi modul pelaporan masalah barang rusak/hilang, penahanan pencairan dana vendor (escrow hold), pembekuan akun mitra, dan eskalasi Superadmin.
 
 ### 3. Architectural Decisions
-- **Contact Privacy Invariance (Policy 13.1)**: Perlindungan nomor telepon pelanggan dan mitra ditegakkan secara deklaratif pada model `Booking::canViewContacts()`, mencegah kebocoran data di luar rentang koordinasi operasional aktif.
-- **48-Hour Fair-Handover Window (Policy 8.2)**: Status `ReturnedByVendor` menjamin barang telah diserahterimakan tanpa memotong hak komplain pelanggan atau menahan payout vendor tanpa batas waktu.
+- **Lifecycle Cycle Partitioning**: Menyimpan `cycle_number` pada setiap `payment_attempts` dan `current_payment_cycle` pada `bookings` memungkinkan sistem menjaga jejak audit yang bersih atas kegagalan transaksi berulang tanpa menghapus atau menimpa riwayat invoice sebelumnya.
+- **30-Minute Cooldown Cooling**: Jeda 30 menit sebelum Admin dapat melakukan reopen mencegah spamming pembuatan invoice berulang dan memberikan waktu bagi pelanggan/mitra memeriksa kendala jaringan perbankan.
 
 ### 4. Active Diffs
-- `app/Enums/BookingStatus.php`
 - `app/Models/Booking.php`
-- `app/Services/BookingService.php`
-- `app/Http/Controllers/Vendor/VendorBookingController.php`
+- `app/Models/PaymentAttempt.php`
+- `app/Services/Payment/XenditPaymentGateway.php`
 - `app/Http/Controllers/BookingController.php`
-- `app/Console/Commands/CheckReturnConfirmationsCommand.php`
+- `app/Http/Controllers/Admin/AdminBookingController.php`
 - `routes/web.php`
-- `resources/views/pages/vendor/bookings/show.blade.php`
-- `resources/views/pages/booking/show.blade.php`
-- `database/migrations/2026_10_28_124554_add_lifecycle_and_confirmation_to_bookings_table.php`
-- `tests/Feature/BookingLifecyclePrivacyTest.php`
-- `tests/Feature/BookingTest.php`
+- `resources/views/layouts/admin.blade.php`
+- `resources/views/pages/admin/bookings/index.blade.php`
+- `resources/views/pages/admin/bookings/show.blade.php`
+- `resources/views/pages/booking/checkout-simulation.blade.php`
+- `database/migrations/2026_10_28_131000_add_qris_attempt_and_cycle_controls.php`
+- `tests/Feature/QrisAttemptLimitTest.php`
 - `AGENTS.md`
 
 

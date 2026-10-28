@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuditLogController;
+use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminFinanceController;
 use App\Http\Controllers\Admin\AdminListingModerationController;
@@ -118,6 +119,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,superadm
     Route::get('/listings/{listing}', [AdminListingModerationController::class, 'show'])->name('listings.show');
     Route::post('/listings/{listing}/publish', [AdminListingModerationController::class, 'publish'])->name('listings.publish');
     Route::post('/listings/{listing}/reject', [AdminListingModerationController::class, 'reject'])->name('listings.reject');
+
+    // Booking Management & Payment Cycle Reopen (Policy 10.2)
+    Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{booking:booking_code}', [AdminBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking:booking_code}/reopen-payment', [AdminBookingController::class, 'reopenPayment'])->name('bookings.reopen_payment');
 
     // Superadmin Exclusive Routes (Financial Reconciliation, Audit Trail, SKCK Approvals per Policies 6.3, 13.2, 13.3)
     Route::middleware(['role:superadmin'])->group(function () {

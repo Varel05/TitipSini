@@ -39,7 +39,15 @@
                     <span class="text-3xl sm:text-4xl font-extrabold text-white">Rp {{ number_format($booking->total_amount, 0, ',', '.') }}</span>
                     <span class="text-sm text-slate-400">IDR</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-2">Kode Reservasi: <span class="font-mono text-emerald-400 font-semibold">{{ $booking->booking_code }}</span> | Ref: {{ $ref }}</p>
+                <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-400">
+                    <span>Kode: <strong class="font-mono text-emerald-400 font-semibold">{{ $booking->booking_code }}</strong></span>
+                    <span>•</span>
+                    <span class="inline-flex items-center gap-1 bg-slate-800 px-2 py-0.5 rounded text-amber-300 font-semibold">
+                        <i class="bi bi-arrow-repeat"></i> Percobaan {{ $booking->getCurrentCycleAttemptsCount() }}/3 (Siklus #{{ $booking->current_payment_cycle }})
+                    </span>
+                    <span>•</span>
+                    <span class="text-slate-300">Kedaluwarsa: 15 Menit</span>
+                </div>
             </div>
         </div>
 
@@ -122,15 +130,26 @@
             </div>
 
             <!-- Interactive Action -->
-            <form action="{{ route('booking.simulate_pay', $booking->booking_code) }}" method="POST">
-                @csrf
-                <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base shadow-lg shadow-emerald-600/25 transition active:scale-[0.99] gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Bayar Sekarang (Konfirmasi Selesai & Payout)
-                </button>
-            </form>
+            @if($booking->isPaymentAttemptLimitExceeded())
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-2">
+                    <strong class="font-bold flex items-center gap-1.5 text-rose-900">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Kuota Percobaan QRIS Telah Habis (3/3)
+                    </strong>
+                    <p class="leading-relaxed">
+                        Anda telah mencapai batas 3 kali percobaan QRIS pada siklus ini. Pembuatan invoice ditangguhkan secara otomatis. Silakan tunggu pembukaan kembali oleh Admin Wilayah.
+                    </p>
+                </div>
+            @else
+                <form action="{{ route('booking.simulate_pay', $booking->booking_code) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base shadow-lg shadow-emerald-600/25 transition active:scale-[0.99] gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Bayar Sekarang (Konfirmasi Selesai & Payout)
+                    </button>
+                </form>
+            @endif
 
             <div class="flex items-center justify-center gap-4 text-xs text-slate-400">
                 <span class="inline-flex items-center gap-1">

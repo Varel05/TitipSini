@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'booking_id',
+    'cycle_number',
     'payment_reference',
     'channel',
     'amount',
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'checkout_url',
     'qr_string',
     'provider_response',
+    'expires_at',
     'paid_at',
 ])]
 class PaymentAttempt extends Model
@@ -31,9 +33,11 @@ class PaymentAttempt extends Model
     protected function casts(): array
     {
         return [
+            'cycle_number' => 'integer',
             'status' => PaymentStatus::class,
             'amount' => 'decimal:2',
             'provider_response' => 'array',
+            'expires_at' => 'datetime',
             'paid_at' => 'datetime',
         ];
     }
@@ -52,5 +56,17 @@ class PaymentAttempt extends Model
     public function isPaid(): bool
     {
         return $this->status === PaymentStatus::Paid;
+    }
+
+    /**
+     * Determine if this attempt has expired.
+     */
+    public function isExpired(): bool
+    {
+        if ($this->status === PaymentStatus::Expired) {
+            return true;
+        }
+
+        return $this->expires_at !== null && $this->expires_at->isPast();
     }
 }

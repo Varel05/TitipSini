@@ -54,6 +54,12 @@
                     Moderasi Listing
                 </a>
 
+                <a href="{{ route('admin.bookings.index') }}"
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.bookings.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                    <i class="bi bi-calendar2-check text-base"></i>
+                    Manajemen Booking
+                </a>
+
                 @if(auth()->user()->isSuperadmin())
                     <a href="{{ route('admin.finance.index') }}"
                         class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.finance.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">

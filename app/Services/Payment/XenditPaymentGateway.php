@@ -9,6 +9,7 @@ use App\Models\PaymentAttempt;
 use App\Services\BookingService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class XenditPaymentGateway implements PaymentGatewayInterface
 {
@@ -18,23 +19,39 @@ class XenditPaymentGateway implements PaymentGatewayInterface
     ) {}
 
     /**
-     * Create closeout checkout / invoice for customer retrieval payment.
+     * Create closeout checkout / invoice for customer retrieval payment (Policy 10.1 & 10.2).
      */
     public function createCloseoutInvoice(Booking $booking): PaymentAttempt
     {
-        // Check if there is already a pending attempt with a valid checkout url
+        // Enforce 3-attempt limit per cycle (Policy 10.2)
+        if ($booking->isPaymentAttemptLimitExceeded()) {
+            throw new \DomainException('Batas maksimal 3 percobaan pembayaran QRIS telah tercapai untuk siklus ini. Menunggu pembukaan kembali oleh Admin Wilayah.');
+        }
+
+        $cycle = $booking->current_payment_cycle ?: 1;
+
+        // Check if there is already a pending attempt in current cycle
         $existing = PaymentAttempt::where('booking_id', $booking->id)
+            ->where('cycle_number', $cycle)
             ->where('status', PaymentStatus::Pending)
             ->latest()
             ->first();
 
         if ($existing && ! empty($existing->checkout_url)) {
-            return $existing;
+            // Check if expired
+            if ($existing->isExpired()) {
+                $existing->update(['status' => PaymentStatus::Expired]);
+                if ($booking->fresh()->isPaymentAttemptLimitExceeded()) {
+                    throw new \DomainException('Batas maksimal 3 percobaan pembayaran QRIS telah tercapai untuk siklus ini. Menunggu pembukaan kembali oleh Admin Wilayah.');
+                }
+            } else {
+                return $existing;
+            }
         }
 
         $secretKey = config('services.xendit.secret_key');
         $isProduction = config('services.xendit.is_production', false);
-        $externalId = 'TITIPSINI-INV-'.$booking->booking_code.'-'.time();
+        $externalId = 'TITIPSINI-INV-'.$booking->booking_code.'-'.time().'-'.Str::random(4);
         $amount = (float) $booking->total_amount;
         $description = "Biaya Penitipan TitipSini #{$booking->booking_code} ({$booking->listing->title})";
 
@@ -87,12 +104,14 @@ class XenditPaymentGateway implements PaymentGatewayInterface
 
         return PaymentAttempt::create([
             'booking_id' => $booking->id,
+            'cycle_number' => $booking->current_payment_cycle ?: 1,
             'payment_reference' => $externalId,
             'channel' => 'xendit_invoice',
             'amount' => $amount,
             'status' => PaymentStatus::Pending,
             'checkout_url' => $checkoutUrl,
             'provider_response' => $providerResponse,
+            'expires_at' => now()->addMinutes(15),
         ]);
     }
 

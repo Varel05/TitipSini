@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,10 +42,23 @@ use Illuminate\Support\Str;
     'returned_at',
     'auto_complete_at',
     'customer_confirmed_at',
+    'current_payment_cycle',
+    'payment_cycle_reopened_at',
+    'payment_reopen_reason',
+    'payment_reopened_by',
 ])]
 class Booking extends Model
 {
     use HasFactory;
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'current_payment_cycle' => 1,
+    ];
 
     /**
      * Get the route key for the model.
@@ -76,6 +90,8 @@ class Booking extends Model
             'returned_at' => 'datetime',
             'auto_complete_at' => 'datetime',
             'customer_confirmed_at' => 'datetime',
+            'current_payment_cycle' => 'integer',
+            'payment_cycle_reopened_at' => 'datetime',
         ];
     }
 
@@ -217,6 +233,109 @@ class Booking extends Model
         }
 
         return $this->vendorProfile?->phone ?? $this->vendorProfile?->user?->phone ?? '-';
+    }
+
+    /**
+     * Get the admin user who reopened the payment cycle.
+     */
+    public function paymentReopenedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'payment_reopened_by');
+    }
+
+    /**
+     * Get count of payment attempts in the current payment cycle (Policy 10.2).
+     */
+    public function getCurrentCycleAttemptsCount(): int
+    {
+        return $this->paymentAttempts()
+            ->where('cycle_number', $this->current_payment_cycle)
+            ->count();
+    }
+
+    /**
+     * Check if 3 payment attempts limit has been exceeded for the current cycle (Policy 10.2).
+     * Exceeded when 3 attempts have been made and all of them are failed or expired (none paid/active).
+     */
+    public function isPaymentAttemptLimitExceeded(): bool
+    {
+        $hasPaid = $this->paymentAttempts()
+            ->where('cycle_number', $this->current_payment_cycle)
+            ->where('status', PaymentStatus::Paid)
+            ->exists();
+
+        if ($hasPaid) {
+            return false;
+        }
+
+        $count = $this->getCurrentCycleAttemptsCount();
+        if ($count < 3) {
+            return false;
+        }
+
+        // If 3 attempts exist, check if the 3rd attempt is still actively pending
+        $latest = $this->getLatestAttemptForCurrentCycle();
+        if ($latest && $latest->status === PaymentStatus::Pending && ! $latest->isExpired()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the latest payment attempt in current cycle.
+     */
+    public function getLatestAttemptForCurrentCycle(): ?PaymentAttempt
+    {
+        return $this->paymentAttempts()
+            ->where('cycle_number', $this->current_payment_cycle)
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Determine if admin can reopen the payment cycle (Policy 10.2).
+     * Rule: Limit exceeded (3 attempts), booking unpaid, and 30-minute cooldown has elapsed.
+     */
+    public function canAdminReopenPayment(): bool
+    {
+        if (! $this->isPaymentAttemptLimitExceeded()) {
+            return false;
+        }
+
+        if (in_array($this->status, [BookingStatus::Completed, BookingStatus::Cancelled], true)) {
+            return false;
+        }
+
+        $latest = $this->getLatestAttemptForCurrentCycle();
+        if (! $latest) {
+            return false;
+        }
+
+        // Must wait 30 minutes since last attempt was created/updated
+        $referenceTime = $latest->expires_at ?? $latest->updated_at;
+
+        return $referenceTime->copy()->addMinutes(30)->isPast();
+    }
+
+    /**
+     * Get cooldown seconds remaining before admin can reopen payment (Policy 10.2).
+     */
+    public function getReopenCooldownSecondsRemaining(): int
+    {
+        if (! $this->isPaymentAttemptLimitExceeded()) {
+            return 0;
+        }
+
+        $latest = $this->getLatestAttemptForCurrentCycle();
+        if (! $latest) {
+            return 0;
+        }
+
+        $referenceTime = $latest->expires_at ?? $latest->updated_at;
+        $canReopenAt = $referenceTime->copy()->addMinutes(30);
+
+        return max(0, (int) now()->diffInSeconds($canReopenAt, false));
     }
 
     /**

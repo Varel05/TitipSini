@@ -98,7 +98,12 @@ class BookingController extends Controller
         $this->bookingService->requestRetrieval($booking);
 
         // Generate Xendit invoice for retrieval closeout
-        $payment = $this->paymentGateway->createCloseoutInvoice($booking);
+        try {
+            $payment = $this->paymentGateway->createCloseoutInvoice($booking);
+        } catch (\DomainException $e) {
+            return redirect()->route('booking.show', $booking->booking_code)
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()->route('booking.show', $booking->booking_code)
             ->with('info', 'Permintaan pengambilan berhasil dikirim. Silakan selesaikan pembayaran tagihan penitipan Anda.');
@@ -109,7 +114,12 @@ class BookingController extends Controller
      */
     public function pay(Booking $booking): RedirectResponse
     {
-        $payment = $this->paymentGateway->createCloseoutInvoice($booking);
+        try {
+            $payment = $this->paymentGateway->createCloseoutInvoice($booking);
+        } catch (\DomainException $e) {
+            return redirect()->route('booking.show', $booking->booking_code)
+                ->with('error', $e->getMessage());
+        }
 
         if (! empty($payment->checkout_url)) {
             return redirect()->away($payment->checkout_url);
