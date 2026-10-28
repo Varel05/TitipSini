@@ -109,7 +109,8 @@
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
                                 <span class="font-mono font-bold text-sm text-slate-900">{{ $b->booking_code }}</span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border {{ $b->status->badgeClasses() }}">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap {{ $b->status->badgeClasses() }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $b->status->dotColorClass() }}"></span>
                                     {{ $b->status->label() }}
                                 </span>
                             </div>

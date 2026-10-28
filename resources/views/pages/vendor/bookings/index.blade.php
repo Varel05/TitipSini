@@ -61,40 +61,40 @@
                 <p class="text-xs text-slate-400 mt-1">Gunakan filter status lain atau ubah kata kunci pencarian Anda.</p>
             </div>
         @else
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-semibold">
                         <tr>
-                            <th class="py-3.5 px-6">Kode &amp; Tanggal</th>
-                            <th class="py-3.5 px-6">Pelanggan</th>
-                            <th class="py-3.5 px-6">Barang &amp; Durasi</th>
-                            <th class="py-3.5 px-6">Kode Segel Keamanan</th>
-                            <th class="py-3.5 px-6">Porsi Vendor (80%)</th>
-                            <th class="py-3.5 px-6">Status</th>
-                            <th class="py-3.5 px-6 text-right">Aksi</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Kode &amp; Tanggal</th>
+                            <th class="py-3 px-4 sm:px-5">Pelanggan</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Barang &amp; Durasi</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Kode Segel Keamanan</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Porsi Vendor (80%)</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Status</th>
+                            <th class="py-3 px-4 sm:px-5 text-right whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
                         @foreach($bookings as $b)
                             <tr class="hover:bg-slate-50/70 transition">
-                                <td class="py-4 px-6 font-mono">
-                                    <span class="font-bold text-slate-900 block">{{ $b->booking_code }}</span>
-                                    <span class="text-[11px] text-slate-400 font-sans">{{ $b->created_at->translatedFormat('d M Y, H:i') }}</span>
+                                <td class="py-3.5 px-4 sm:px-5 font-mono whitespace-nowrap">
+                                    <span class="font-bold text-slate-900 block text-xs">{{ $b->booking_code }}</span>
+                                    <span class="text-[11px] text-slate-400 font-sans block">{{ $b->created_at->translatedFormat('d M Y, H:i') }}</span>
                                 </td>
 
-                                <td class="py-4 px-6">
-                                    <span class="font-bold text-slate-900 block">{{ $b->customer->name }}</span>
-                                    <span class="text-[11px] text-slate-500">{{ $b->customer->phone }}</span>
+                                <td class="py-3.5 px-4 sm:px-5 max-w-[150px]">
+                                    <span class="font-bold text-slate-900 block truncate">{{ $b->customer->name }}</span>
+                                    <span class="text-[11px] text-slate-500 block truncate font-mono">{{ $b->customer->phone }}</span>
                                 </td>
 
-                                <td class="py-4 px-6">
+                                <td class="py-3.5 px-4 sm:px-5 whitespace-nowrap">
                                     <span class="font-semibold text-slate-800 block">{{ $b->total_items }} Unit Barang</span>
                                     <span class="text-[11px] text-slate-500">{{ $b->duration_units }} {{ $b->duration_type === 'day' ? 'Hari' : 'Jam' }}</span>
                                 </td>
 
-                                <td class="py-4 px-6 font-mono">
+                                <td class="py-3.5 px-4 sm:px-5 font-mono whitespace-nowrap">
                                     @if($b->security_seal_code)
-                                        <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                                        <span class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
                                             <i class="bi bi-shield-lock-fill"></i> {{ $b->security_seal_code }}
                                         </span>
                                     @else
@@ -102,18 +102,19 @@
                                     @endif
                                 </td>
 
-                                <td class="py-4 px-6 font-semibold">
-                                    <span class="text-emerald-600 font-bold block">Rp {{ number_format($b->vendor_earnings, 0, ',', '.') }}</span>
+                                <td class="py-3.5 px-4 sm:px-5 font-semibold whitespace-nowrap">
+                                    <span class="text-emerald-600 font-bold block text-sm">Rp {{ number_format($b->vendor_earnings, 0, ',', '.') }}</span>
                                     <span class="text-[10px] text-slate-400">Total: Rp {{ number_format($b->total_amount, 0, ',', '.') }}</span>
                                 </td>
 
-                                <td class="py-4 px-6">
-                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border {{ $b->status->badgeClasses() }}">
+                                <td class="py-3.5 px-4 sm:px-5 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border whitespace-nowrap shadow-sm {{ $b->status->badgeClasses() }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $b->status->dotColorClass() }}"></span>
                                         {{ $b->status->label() }}
                                     </span>
                                 </td>
 
-                                <td class="py-4 px-6 text-right">
+                                <td class="py-3.5 px-4 sm:px-5 text-right whitespace-nowrap">
                                     <a href="{{ route('vendor.bookings.show', $b->booking_code) }}" 
                                         class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs inline-flex items-center gap-1 transition">
                                         Proses &rarr;

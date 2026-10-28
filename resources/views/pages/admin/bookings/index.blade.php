@@ -92,8 +92,9 @@
                                 <span class="font-bold text-slate-800 block">{{ $booking->vendorProfile?->business_name ?? '-' }}</span>
                                 <span class="text-[11px] text-slate-500">{{ $booking->listing?->title }} • {{ $booking->listing?->city }}</span>
                             </td>
-                            <td class="py-4 px-5">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $booking->status->badgeClasses() }}">
+                            <td class="py-4 px-5 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border whitespace-nowrap shadow-sm {{ $booking->status->badgeClasses() }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $booking->status->dotColorClass() }}"></span>
                                     {{ $booking->status->label() }}
                                 </span>
                             </td>

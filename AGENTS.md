@@ -185,6 +185,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Membatasi lebar nama pelanggan (`max-w-[150px] truncate`) dan menyesuaikan padding sel tabel (`py-3.5 px-4 sm:px-5`).
   - Menjaga tabel di dalam wrapper `overflow-x-auto w-full` pada card berbatas `overflow-hidden` sehingga tidak memanjang melebihi batas layar, teks tidak terpotong atau ter-wrap berantakan, serta telah dibuild ulang via Vite.
 
+- **Perbaikan Tampilan Teks Status Pesanan (/vendor/bookings)**:
+  - Menghilangkan bug teks status terpotong (font/box clipping) akibat elemen `<span>` berstatus inline yang membungkus teks panjang multi-baris dengan padding vertikal.
+  - Mengubah badge status menjadi `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border whitespace-nowrap shadow-sm` dilengkapi indikator titik warna status (`dotColorClass`).
+  - Mempersingkat label status di `BookingStatus::label()` agar padat, profesional, dan seragam: `'Dikonfirmasi (Siap Drop)'` -> `'Siap Dititipkan'`, `'Barang Tersimpan (Tersegel)'` -> `'Tersimpan & Tersegel'`, `'Pengambilan Diajukan (Menunggu Bayar)'` -> `'Pengambilan Diajukan'`, `'Barang Dikembalikan Mitra (Menunggu Konfirmasi 48 Jam)'` -> `'Barang Dikembalikan (48 Jam)'`, `'Selesai & Barang Diterima'` -> `'Selesai & Diterima'`, `'Dalam Sengketa / Komplain'` -> `'Dalam Sengketa'`.
+  - Menerapkan padding sel tabel yang proporsional (`py-3.5 px-4 sm:px-5`) dengan wrapper `overflow-x-auto w-full` dan `whitespace-nowrap` pada kolom Kode, Segel, Porsi Vendor, Status, dan Aksi.
+  - Memperbarui styling badge serupa pada `vendor/dashboard`, `admin/bookings`, dan `booking/index`.
+
 ### 2. Pending Tasks
 - **Penyelarasan Kebijakan Operasional Menyeluruh (Policy 1-19) Selesai**: Seluruh task utama (Wilayah Operasional & Boundary, Tata Kelola SKCK & Privasi, Siklus Booking & Kontak, Pembatasan QRIS & Reopen, Modul Sengketa & Eskalasi, serta polish antarmuka/responsiveness vendor) telah rampung dan terverifikasi ganda. Siap untuk pengujian regresi platform menyeluruh dan rilis.
 
@@ -194,8 +201,11 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - **Table Density & Overflow Containment**: Menggunakan token whitespace-nowrap pada data numerik/kode/status serta truncate pada metadata teks panjang untuk memastikan konsistensi layout grid pada dashboard operasional dan mobile viewport.
 
 ### 4. Active Diffs
-- `app/Enums/SettlementStatus.php`
-- `resources/views/pages/vendor/settlements/index.blade.php`
+- `app/Enums/BookingStatus.php`
+- `resources/views/pages/vendor/bookings/index.blade.php`
+- `resources/views/pages/vendor/dashboard.blade.php`
+- `resources/views/pages/admin/bookings/index.blade.php`
+- `resources/views/pages/booking/index.blade.php`
 - `AGENTS.md`
 
 

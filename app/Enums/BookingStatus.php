@@ -21,14 +21,32 @@ enum BookingStatus: string
     {
         return match ($this) {
             self::Created => 'Menunggu Konfirmasi',
-            self::Confirmed => 'Dikonfirmasi (Siap Drop)',
-            self::CheckedIn => 'Barang Tersimpan (Tersegel)',
-            self::RetrievalRequested => 'Pengambilan Diajukan (Menunggu Bayar)',
-            self::ReturnedByVendor => 'Barang Dikembalikan Mitra (Menunggu Konfirmasi 48 Jam)',
-            self::Completed => 'Selesai & Barang Diterima',
-            self::Disputed => 'Dalam Sengketa / Komplain',
+            self::Confirmed => 'Siap Dititipkan',
+            self::CheckedIn => 'Tersimpan & Tersegel',
+            self::RetrievalRequested => 'Pengambilan Diajukan',
+            self::ReturnedByVendor => 'Barang Dikembalikan (48 Jam)',
+            self::Completed => 'Selesai & Diterima',
+            self::Disputed => 'Dalam Sengketa',
             self::Cancelled => 'Dibatalkan',
             self::Expired => 'Kadaluarsa',
+        };
+    }
+
+    /**
+     * Dot indicator color for badges.
+     */
+    public function dotColorClass(): string
+    {
+        return match ($this) {
+            self::Created => 'bg-amber-500',
+            self::Confirmed => 'bg-blue-500',
+            self::CheckedIn => 'bg-indigo-500',
+            self::RetrievalRequested => 'bg-purple-500',
+            self::ReturnedByVendor => 'bg-sky-500',
+            self::Completed => 'bg-emerald-500',
+            self::Disputed => 'bg-orange-500',
+            self::Cancelled => 'bg-rose-500',
+            self::Expired => 'bg-slate-400',
         };
     }
 
