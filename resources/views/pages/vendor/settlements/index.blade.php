@@ -78,57 +78,64 @@
     </div>
 
     <!-- Settlement History Table -->
-    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden space-y-4">
-        <div class="p-6 border-b border-slate-100">
-            <h3 class="font-bold text-slate-900 text-base">Riwayat Transaksi &amp; Pencairan Dana</h3>
-            <p class="text-xs text-slate-500">Pencatatan mutasi kredit bagi hasil 80% per pesanan</p>
+    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h3 class="font-bold text-slate-900 text-base">Riwayat Transaksi &amp; Pencairan Dana</h3>
+                <p class="text-xs text-slate-500">Pencatatan mutasi kredit bagi hasil 80% per pesanan</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-400">
+                Total Catatan: {{ $settlements->total() }} Transaksi
+            </span>
         </div>
 
         @if($settlements->isEmpty())
             <div class="text-center py-12">
+                <i class="bi bi-wallet2 text-3xl text-slate-300 block mb-2"></i>
                 <p class="text-xs text-slate-400">Belum ada catatan pencairan dana. Transaksi akan muncul setelah pesanan diselesaikan.</p>
             </div>
         @else
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px] font-semibold">
                         <tr>
-                            <th class="py-3 px-6">ID Settlement &amp; Tanggal</th>
-                            <th class="py-3 px-6">Kode Booking</th>
-                            <th class="py-3 px-6">Pelanggan</th>
-                            <th class="py-3 px-6">Nominal Bersih (80%)</th>
-                            <th class="py-3 px-6">Referensi Payout</th>
-                            <th class="py-3 px-6">Status Payout</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">ID &amp; Tanggal</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Kode Booking</th>
+                            <th class="py-3 px-4 sm:px-5">Pelanggan</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Nominal Bersih (80%)</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Ref Payout</th>
+                            <th class="py-3 px-4 sm:px-5 whitespace-nowrap">Status Payout</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
                         @foreach($settlements as $s)
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="py-4 px-6 font-mono">
-                                    <span class="font-bold text-slate-900 block">SETTLE-{{ $s->id }}</span>
-                                    <span class="text-[11px] text-slate-400 font-sans">{{ $s->created_at->translatedFormat('d M Y, H:i') }}</span>
+                            <tr class="hover:bg-slate-50/70 transition">
+                                <td class="py-3.5 px-4 sm:px-5 whitespace-nowrap">
+                                    <span class="font-mono font-bold text-slate-900 block text-xs">SETTLE-{{ $s->id }}</span>
+                                    <span class="text-[11px] text-slate-400 font-sans block">{{ $s->created_at->translatedFormat('d M Y, H:i') }}</span>
                                 </td>
 
-                                <td class="py-4 px-6 font-mono font-bold text-indigo-600">
-                                    <a href="{{ route('vendor.bookings.show', $s->booking->booking_code) }}" class="hover:underline">
+                                <td class="py-3.5 px-4 sm:px-5 font-mono font-bold text-indigo-600 whitespace-nowrap">
+                                    <a href="{{ route('vendor.bookings.show', $s->booking->booking_code) }}" class="hover:underline inline-flex items-center gap-1">
                                         {{ $s->booking->booking_code }}
                                     </a>
                                 </td>
 
-                                <td class="py-4 px-6 font-medium text-slate-900">
+                                <td class="py-3.5 px-4 sm:px-5 font-medium text-slate-900 truncate max-w-[150px]">
                                     {{ $s->booking->customer->name }}
                                 </td>
 
-                                <td class="py-4 px-6 font-bold text-emerald-600 text-sm">
+                                <td class="py-3.5 px-4 sm:px-5 font-bold text-emerald-600 text-sm whitespace-nowrap">
                                     Rp {{ number_format($s->amount, 0, ',', '.') }}
                                 </td>
 
-                                <td class="py-4 px-6 font-mono text-[11px] text-slate-500">
-                                    {{ $s->payout_reference ?? 'Pending Generation' }}
+                                <td class="py-3.5 px-4 sm:px-5 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                                    {{ $s->payout_reference ?? 'Belum Digenerate' }}
                                 </td>
 
-                                <td class="py-4 px-6">
-                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border {{ $s->status->badgeClasses() }}">
+                                <td class="py-3.5 px-4 sm:px-5 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border whitespace-nowrap shadow-sm {{ $s->status->badgeClasses() }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $s->status === \App\Enums\SettlementStatus::Settled ? 'bg-emerald-500' : ($s->status === \App\Enums\SettlementStatus::OnHold ? 'bg-rose-500' : 'bg-amber-500') }}"></span>
                                         {{ $s->status->label() }}
                                     </span>
                                 </td>
@@ -138,9 +145,11 @@
                 </table>
             </div>
 
-            <div class="p-4 border-t border-slate-100">
-                {{ $settlements->links() }}
-            </div>
+            @if($settlements->hasPages())
+                <div class="p-4 border-t border-slate-100">
+                    {{ $settlements->links() }}
+                </div>
+            @endif
         @endif
     </div>
 

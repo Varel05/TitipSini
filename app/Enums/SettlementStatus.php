@@ -15,9 +15,9 @@ enum SettlementStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Menunggu Pencairan Mitra',
-            self::OnHold => 'Ditahan Karena Sengketa (Escrow Hold)',
-            self::Settled => 'Dana Disalurkan ke Mitra',
+            self::Pending => 'Menunggu Pencairan',
+            self::OnHold => 'Ditahan (Sengketa)',
+            self::Settled => 'Telah Dicairkan',
             self::Failed => 'Pencairan Gagal',
         };
     }

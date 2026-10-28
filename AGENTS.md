@@ -179,30 +179,23 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Menerapkan middleware `auth` pada route `booking.index` (`/pesanan`), sehingga tamu anonim yang belum login otomatis dialihkan (redirect HTTP 302) ke halaman login `/login`.
   - Memastikan pengguna yang telah login hanya dapat melihat riwayat pesanannya sendiri (`where('customer_id', auth()->id())`). Terverifikasi via test `BookingTest`.
 
+- **Perbaikan UI Tabel Settlement Mitra (/vendor/settlements)**:
+  - Mempersingkat teks label badge enum `SettlementStatus::Pending` dari `'Menunggu Pencairan Mitra'` menjadi `'Menunggu Pencairan'`.
+  - Menambahkan styling responsif dengan `whitespace-nowrap` pada kolom ID, kode booking, badge status, nominal, dan ref payout.
+  - Membatasi lebar nama pelanggan (`max-w-[150px] truncate`) dan menyesuaikan padding sel tabel (`py-3.5 px-4 sm:px-5`).
+  - Menjaga tabel di dalam wrapper `overflow-x-auto w-full` pada card berbatas `overflow-hidden` sehingga tidak memanjang melebihi batas layar, teks tidak terpotong atau ter-wrap berantakan, serta telah dibuild ulang via Vite.
+
 ### 2. Pending Tasks
-- **Penyelarasan Kebijakan Operasional Menyeluruh (Policy 1-19) Selesai**: Seluruh task utama (Wilayah Operasional & Boundary, Tata Kelola SKCK & Privasi, Siklus Booking & Kontak, Pembatasan QRIS & Reopen, serta Modul Sengketa & Eskalasi) telah rampung dan terverifikasi ganda. Siap untuk pengujian regresi platform menyeluruh dan rilis.
+- **Penyelarasan Kebijakan Operasional Menyeluruh (Policy 1-19) Selesai**: Seluruh task utama (Wilayah Operasional & Boundary, Tata Kelola SKCK & Privasi, Siklus Booking & Kontak, Pembatasan QRIS & Reopen, Modul Sengketa & Eskalasi, serta polish antarmuka/responsiveness vendor) telah rampung dan terverifikasi ganda. Siap untuk pengujian regresi platform menyeluruh dan rilis.
 
 ### 3. Architectural Decisions
 - **Escrow Payout Invariance (Policy 11.1)**: Mengunci `vendor_settlements` pada status `OnHold` saat sengketa diajukan melindungi dana konsumen dan integritas platform sebelum barang atau kerugian diselesaikan.
 - **Hierarchical Dispute Escalation**: Membedakan sengketa operasional harian (wewenang Admin Wilayah) dan sengketa kritis hukum/kehilangan (wewenang eksklusif Superadmin) menjamin penegakan tata kelola yang ketat tanpa menghambat kecepatan operasional wilayah.
+- **Table Density & Overflow Containment**: Menggunakan token whitespace-nowrap pada data numerik/kode/status serta truncate pada metadata teks panjang untuk memastikan konsistensi layout grid pada dashboard operasional dan mobile viewport.
 
 ### 4. Active Diffs
-- `app/Enums/DisputeCategory.php`
-- `app/Enums/DisputeStatus.php`
 - `app/Enums/SettlementStatus.php`
-- `app/Models/Dispute.php`
-- `app/Models/Booking.php`
-- `app/Models/VendorProfile.php`
-- `app/Http/Controllers/CustomerDisputeController.php`
-- `app/Http/Controllers/Admin/AdminDisputeController.php`
-- `routes/web.php`
-- `resources/views/layouts/admin.blade.php`
-- `resources/views/pages/booking/show.blade.php`
-- `resources/views/pages/booking/dispute-create.blade.php`
-- `resources/views/pages/admin/disputes/index.blade.php`
-- `resources/views/pages/admin/disputes/show.blade.php`
-- `database/migrations/2026_10_28_133000_create_disputes_and_vendor_suspension_table.php`
-- `tests/Feature/DisputeManagementTest.php`
+- `resources/views/pages/vendor/settlements/index.blade.php`
 - `AGENTS.md`
 
 
