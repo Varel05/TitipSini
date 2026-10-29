@@ -16,88 +16,90 @@
     <!-- Tailwind CSS (Vite) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full flex text-slate-800 antialiased font-sans">
+<body class="min-h-screen md:h-screen md:overflow-hidden flex text-slate-800 antialiased font-sans bg-slate-100">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-950 text-slate-300 flex-shrink-0 flex flex-col justify-between hidden md:flex border-r border-slate-800">
+    <aside class="w-64 bg-slate-950 text-slate-300 flex-shrink-0 flex flex-col justify-between hidden md:flex border-r border-slate-800 sticky top-0 h-screen overflow-y-auto z-30 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-slate-950 [&::-webkit-scrollbar-thumb]:bg-slate-800">
         <div>
             <!-- Brand -->
-            <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-                <div class="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30">
-                    <i class="bi bi-shield-lock-fill text-lg"></i>
+            <div class="h-14 flex items-center px-5 border-b border-slate-800/80 gap-3 flex-shrink-0">
+                <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-600/30">
+                    <i class="bi bi-shield-lock-fill text-base"></i>
                 </div>
                 <div>
-                    <span class="font-extrabold text-white text-lg tracking-tight">Titip<span class="text-purple-400">Sini</span></span>
-                    <span class="block text-[10px] text-purple-400 font-mono tracking-wider uppercase font-semibold">Admin Executive</span>
+                    <span class="font-extrabold text-white text-base tracking-tight">Titip<span class="text-purple-400">Sini</span></span>
+                    <span class="block text-[9px] text-purple-400 font-mono tracking-wider uppercase font-semibold">Admin Executive</span>
                 </div>
             </div>
 
             <!-- Nav Links -->
-            <div class="px-4 py-6 space-y-1 text-sm font-medium">
+            <div class="px-3 py-3 space-y-0.5 text-xs font-medium">
                 <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.dashboard') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <i class="bi bi-speedometer2 text-base"></i>
-                    Dashboard
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.dashboard') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                    <i class="bi bi-speedometer2 text-sm"></i>
+                    <span>Dashboard</span>
                 </a>
 
                 <a href="{{ route('admin.vendors.index') }}"
-                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.vendors.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <div class="flex items-center gap-3">
-                        <i class="bi bi-person-badge-fill text-base"></i>
+                    class="flex items-center justify-between px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.vendors.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                    <div class="flex items-center gap-2.5">
+                        <i class="bi bi-person-badge-fill text-sm"></i>
                         <span>Verifikasi KYC Mitra</span>
                     </div>
                 </a>
 
                 <a href="{{ route('admin.listings.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.listings.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <i class="bi bi-shop-window text-base"></i>
-                    Moderasi Listing
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.listings.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                    <i class="bi bi-shop-window text-sm"></i>
+                    <span>Moderasi Listing</span>
                 </a>
 
                 <a href="{{ route('admin.bookings.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.bookings.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <i class="bi bi-calendar2-check text-base"></i>
-                    Manajemen Booking
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.bookings.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                    <i class="bi bi-calendar2-check text-sm"></i>
+                    <span>Manajemen Booking</span>
                 </a>
 
                 <a href="{{ route('admin.disputes.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.disputes.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                    <i class="bi bi-shield-exclamation text-base"></i>
-                    Pusat Sengketa (Disputes)
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.disputes.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                    <i class="bi bi-shield-exclamation text-sm"></i>
+                    <span>Pusat Sengketa</span>
                 </a>
 
                 @if(auth()->user()->isSuperadmin())
                     <a href="{{ route('admin.finance.index') }}"
-                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.finance.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                        <i class="bi bi-cash-stack text-base"></i>
-                        Rekonsiliasi Finansial
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.finance.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                        <i class="bi bi-cash-stack text-sm"></i>
+                        <span>Rekonsiliasi Finansial</span>
                     </a>
 
                     <a href="{{ route('admin.audit_logs.index') }}"
-                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.audit_logs.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                        <i class="bi bi-journal-text text-base"></i>
-                        Jejak Audit Sistem
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.audit_logs.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                        <i class="bi bi-journal-text text-sm"></i>
+                        <span>Jejak Audit Sistem</span>
                     </a>
 
                     <a href="{{ route('admin.skck_requests.index') }}"
-                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('admin.skck_requests.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
-                        <i class="bi bi-shield-lock text-base"></i>
-                        Izin Akses SKCK
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('admin.skck_requests.*') ? 'bg-purple-600 text-white font-semibold shadow-md shadow-purple-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-900' }}">
+                        <i class="bi bi-shield-lock text-sm"></i>
+                        <span>Izin Akses SKCK</span>
                     </a>
                 @endif
             </div>
         </div>
 
         <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-slate-800 space-y-2">
-            <a href="{{ route('vendor.dashboard') }}" class="flex items-center gap-2 text-xs text-slate-400 hover:text-white px-2 py-1.5 transition">
-                <i class="bi bi-box-arrow-up-right"></i> Buka Portal Mitra
-            </a>
-            <a href="{{ route('home') }}" class="flex items-center gap-2 text-xs text-slate-400 hover:text-white px-2 py-1.5 transition">
-                <i class="bi bi-globe"></i> Website Publik
-            </a>
+        <div class="p-3 border-t border-slate-800/80 space-y-2 flex-shrink-0 bg-slate-950">
+            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                <a href="{{ route('vendor.dashboard') }}" class="flex items-center justify-center gap-1.5 text-slate-400 hover:text-white px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 transition" title="Buka Portal Mitra">
+                    <i class="bi bi-box-arrow-up-right text-[10px]"></i> Portal Mitra
+                </a>
+                <a href="{{ route('home') }}" class="flex items-center justify-center gap-1.5 text-slate-400 hover:text-white px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 transition" title="Website Publik">
+                    <i class="bi bi-globe text-[10px]"></i> Web Publik
+                </a>
+            </div>
 
-            <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
                 <div class="truncate mr-2">
                     <span class="block text-xs font-bold text-white truncate">{{ auth()->user()->name ?? 'Administrator' }}</span>
                     <span class="block text-[10px] text-purple-400 font-mono uppercase">{{ auth()->user()->role->label() ?? 'Admin' }}</span>
@@ -113,7 +115,7 @@
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" title="Keluar Akun" class="text-slate-400 hover:text-rose-400 p-1.5 transition">
+                    <button type="submit" title="Keluar Akun" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition">
                         <i class="bi bi-box-arrow-right text-base"></i>
                     </button>
                 </form>
@@ -122,7 +124,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+    <div class="flex-1 flex flex-col min-w-0 md:h-full overflow-y-auto">
         <!-- Top Navbar -->
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20 shadow-sm">
             <div class="flex items-center gap-4">

@@ -192,20 +192,28 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - Menerapkan padding sel tabel yang proporsional (`py-3.5 px-4 sm:px-5`) dengan wrapper `overflow-x-auto w-full` dan `whitespace-nowrap` pada kolom Kode, Segel, Porsi Vendor, Status, dan Aksi.
   - Memperbarui styling badge serupa pada `vendor/dashboard`, `admin/bookings`, dan `booking/index`.
 
+- **Perbaikan Tinggi Penuh Sidebar & Proporsi Navbar (/admin & /vendor)**:
+  - Mengatasi masalah sidebar terpotong di bagian bawah saat halaman di-scroll ke paling bawah.
+  - Menerapkan `min-h-screen md:h-screen md:overflow-hidden` pada elemen `<body>` dan `md:h-full overflow-y-auto` pada area konten utama (`div.flex-1`).
+  - Mengubah `<aside>` menjadi `sticky top-0 h-screen overflow-y-auto z-30` dengan scrollbar tipis halus, menjamin sidebar selalu menempel penuh sepanjang 100vh tanpa celah putih atau terpotong di perangkat/layar mana pun.
+  - Menyederhanakan dan mengoptimalkan proporsi vertikal sidebar:
+    - Memadatkan brand header dari `h-16` ke `h-14` dengan icon proporsional.
+    - Mengurangi padding link navigasi dari `px-3.5 py-2.5` (`text-sm`) menjadi `px-3 py-2` (`text-xs`) dengan `space-y-0.5`, menghemat >80px ruang vertikal.
+    - Mengatur link eksternal (Portal Mitra & Web Publik) dalam layout grid berdampingan yang hemat ruang di footer.
+    - Memadatkan card user profile dan logout button agar pas dalam satu layar viewport laptop tanpa overflow.
+  - Menerapkan arsitektur layout yang sama pada `resources/views/layouts/vendor.blade.php`.
+
 ### 2. Pending Tasks
 - **Penyelarasan Kebijakan Operasional Menyeluruh (Policy 1-19) Selesai**: Seluruh task utama (Wilayah Operasional & Boundary, Tata Kelola SKCK & Privasi, Siklus Booking & Kontak, Pembatasan QRIS & Reopen, Modul Sengketa & Eskalasi, serta polish antarmuka/responsiveness vendor) telah rampung dan terverifikasi ganda. Siap untuk pengujian regresi platform menyeluruh dan rilis.
 
 ### 3. Architectural Decisions
 - **Escrow Payout Invariance (Policy 11.1)**: Mengunci `vendor_settlements` pada status `OnHold` saat sengketa diajukan melindungi dana konsumen dan integritas platform sebelum barang atau kerugian diselesaikan.
 - **Hierarchical Dispute Escalation**: Membedakan sengketa operasional harian (wewenang Admin Wilayah) dan sengketa kritis hukum/kehilangan (wewenang eksklusif Superadmin) menjamin penegakan tata kelola yang ketat tanpa menghambat kecepatan operasional wilayah.
-- **Table Density & Overflow Containment**: Menggunakan token whitespace-nowrap pada data numerik/kode/status serta truncate pada metadata teks panjang untuk memastikan konsistensi layout grid pada dashboard operasional dan mobile viewport.
+- **Sticky Viewport Sidebar & Isolated Scroll Architecture**: Mengunci body desktop ke `h-screen overflow-hidden` dan aside ke `sticky top-0 h-screen overflow-y-auto` mengeliminasi *double scrollbar* dan mencegah sidebar terangkat atau terpotong saat konten halaman berukuran panjang.
 
 ### 4. Active Diffs
-- `app/Enums/BookingStatus.php`
-- `resources/views/pages/vendor/bookings/index.blade.php`
-- `resources/views/pages/vendor/dashboard.blade.php`
-- `resources/views/pages/admin/bookings/index.blade.php`
-- `resources/views/pages/booking/index.blade.php`
+- `resources/views/layouts/admin.blade.php`
+- `resources/views/layouts/vendor.blade.php`
 - `AGENTS.md`
 
 

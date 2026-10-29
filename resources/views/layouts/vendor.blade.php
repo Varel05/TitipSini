@@ -16,66 +16,66 @@
     <!-- Tailwind CSS (Vite) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full flex text-slate-800 antialiased font-sans">
+<body class="min-h-screen md:h-screen md:overflow-hidden flex text-slate-800 antialiased font-sans bg-slate-50">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between hidden md:flex border-r border-slate-800">
+    <aside class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between hidden md:flex border-r border-slate-800 sticky top-0 h-screen overflow-y-auto z-30 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-slate-900 [&::-webkit-scrollbar-thumb]:bg-slate-800">
         <div>
             <!-- Brand -->
-            <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
-                <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
-                    <i class="bi bi-box-seam-fill text-lg"></i>
+            <div class="h-14 flex items-center px-5 border-b border-slate-800/80 gap-3 flex-shrink-0">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+                    <i class="bi bi-box-seam-fill text-base"></i>
                 </div>
                 <div>
-                    <span class="font-extrabold text-white text-lg tracking-tight">Titip<span class="text-indigo-400">Sini</span></span>
-                    <span class="block text-[10px] text-slate-400 font-mono tracking-wider uppercase">Portal Mitra</span>
+                    <span class="font-extrabold text-white text-base tracking-tight">Titip<span class="text-indigo-400">Sini</span></span>
+                    <span class="block text-[9px] text-slate-400 font-mono tracking-wider uppercase font-semibold">Portal Mitra</span>
                 </div>
             </div>
 
             <!-- Nav Links -->
-            <div class="px-4 py-6 space-y-1 text-sm font-medium">
+            <div class="px-3 py-3 space-y-0.5 text-xs font-medium">
                 <a href="{{ route('vendor.dashboard') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('vendor.dashboard') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                    <i class="bi bi-grid-1x2-fill text-base"></i>
-                    Dashboard
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('vendor.dashboard') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                    <i class="bi bi-grid-1x2-fill text-sm"></i>
+                    <span>Dashboard</span>
                 </a>
 
                 <a href="{{ route('vendor.bookings.index') }}"
-                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('vendor.bookings.*') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                    <div class="flex items-center gap-3">
-                        <i class="bi bi-ticket-perforated-fill text-base"></i>
+                    class="flex items-center justify-between px-3 py-2 rounded-xl transition {{ request()->routeIs('vendor.bookings.*') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                    <div class="flex items-center gap-2.5">
+                        <i class="bi bi-ticket-perforated-fill text-sm"></i>
                         <span>Operasional Penitipan</span>
                     </div>
                 </a>
 
                 <a href="{{ route('vendor.listings.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('vendor.listings.*') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                    <i class="bi bi-shop text-base"></i>
-                    Kelola Listing & Tarif
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('vendor.listings.*') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                    <i class="bi bi-shop text-sm"></i>
+                    <span>Kelola Listing & Tarif</span>
                 </a>
 
                 <a href="{{ route('vendor.settlements.index') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->routeIs('vendor.settlements.*') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
-                    <i class="bi bi-wallet2 text-base"></i>
-                    Settlement & Payout (80%)
+                    class="flex items-center gap-2.5 px-3 py-2 rounded-xl transition {{ request()->routeIs('vendor.settlements.*') ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/20' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
+                    <i class="bi bi-wallet2 text-sm"></i>
+                    <span>Settlement & Payout (80%)</span>
                 </a>
             </div>
         </div>
 
         <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-slate-800 space-y-3">
-            <a href="{{ route('home') }}" class="flex items-center gap-2 text-xs text-slate-400 hover:text-white px-2 py-1.5 transition">
-                <i class="bi bi-arrow-left"></i> Lihat Website Publik
+        <div class="p-3 border-t border-slate-800/80 space-y-2 flex-shrink-0 bg-slate-900">
+            <a href="{{ route('home') }}" class="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 hover:text-white px-2 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 hover:border-slate-600 transition">
+                <i class="bi bi-arrow-left text-[10px]"></i> Lihat Website Publik
             </a>
 
-            <div class="p-3 rounded-2xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-between">
+            <div class="p-2.5 rounded-xl bg-slate-800/70 border border-slate-700/60 flex items-center justify-between">
                 <div class="truncate mr-2">
                     <span class="block text-xs font-bold text-white truncate">{{ auth()->user()->name ?? 'Mitra Vendor' }}</span>
-                    <span class="block text-[11px] text-slate-400 truncate">{{ auth()->user()->email ?? '' }}</span>
+                    <span class="block text-[10px] text-slate-400 truncate">{{ auth()->user()->email ?? '' }}</span>
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" title="Keluar Akun" class="text-slate-400 hover:text-rose-400 p-1.5 transition">
+                    <button type="submit" title="Keluar Akun" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition">
                         <i class="bi bi-box-arrow-right text-base"></i>
                     </button>
                 </form>
@@ -84,7 +84,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+    <div class="flex-1 flex flex-col min-w-0 md:h-full overflow-y-auto">
         <!-- Top Navbar -->
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20">
             <div class="flex items-center gap-4">
